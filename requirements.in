@@ -1,0 +1,7 @@
+pandas
+scikit-learn
+openpyxl
+fpdf
+# matplotlib
+# fastapi
+# reflex==0.6.8

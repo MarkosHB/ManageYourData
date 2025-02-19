@@ -1,7 +1,7 @@
 import os
 import argparse
-from utils import constants
-from data_manager import DataManager
+from manageyourdata.utils import constants
+from manageyourdata.data_manager import DataManager
 
 
 def validate_pdf_file(value: str): 
@@ -42,7 +42,7 @@ def main():
         dm.report_pdf(args.report if os.path.dirname(args.report) else f"reports/{args.report}")
 
     elif args.export:
-        dm.export_data(f"exports/{args.export}")
+        dm.export_data(f"{args.export}")
 
     else:
         pass

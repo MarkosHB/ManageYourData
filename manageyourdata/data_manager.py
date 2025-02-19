@@ -1,8 +1,8 @@
 import os
 import pandas as pd
 from fpdf import FPDF
-import pdf_generator, metrics
-from utils import constants
+import manageyourdata.pdf_generator as pdf_generator, manageyourdata.metrics as metrics
+from manageyourdata.utils import constants
 
 
 class DataManager:
@@ -64,7 +64,7 @@ class DataManager:
         """        
 
         file_extension = constants.FORMAT[option]
-        export_path = f"{self.file_name}-exported{file_extension}"
+        export_path = f"exports/{self.file_name}-exported{file_extension}"
         
         if file_extension == ".csv":
             self.data.to_csv(export_path, index=False)

@@ -2,6 +2,6 @@ pandas
 scikit-learn
 openpyxl
 fpdf
+streamlit
 # matplotlib
 # fastapi
-# reflex==0.6.8

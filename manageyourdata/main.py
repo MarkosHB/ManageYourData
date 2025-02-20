@@ -1,7 +1,7 @@
 import os
 import argparse
-from utils import constants
-from data_manager import DataManager
+from manageyourdata.utils import constants
+from manageyourdata.data_manager import DataManager
 
 
 def validate_pdf_file(value: str): 

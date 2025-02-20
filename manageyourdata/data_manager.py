@@ -2,8 +2,8 @@ import os
 import pandas as pd
 from fpdf import FPDF
 from manageyourdata import metrics
-import pdf_generator as pdf_generator
-from utils import constants
+import manageyourdata.pdf_generator as pdf_generator
+from manageyourdata.utils import constants
 
 
 class DataManager:
@@ -30,7 +30,7 @@ class DataManager:
             self.data = pd.read_excel(file_path)
 
         else:
-            raise ValueError("File format not supported. Use --sf to show all available options.")
+            raise ValueError("File format not supported.")
         
     
     def report_pdf(self, output_path: str):

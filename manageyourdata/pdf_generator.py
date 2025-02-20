@@ -1,5 +1,5 @@
 from fpdf import FPDF
-from utils import constants
+from manageyourdata.utils import constants
 
 def heading(pdf: FPDF):
     pdf.set_font("Arial", "B", 16)

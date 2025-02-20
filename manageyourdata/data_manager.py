@@ -1,16 +1,15 @@
 import os
 import pandas as pd
 from fpdf import FPDF
-import manageyourdata.pdf_generator as pdf_generator, manageyourdata.metrics as metrics
-from manageyourdata.utils import constants
+from manageyourdata import metrics
+import pdf_generator as pdf_generator
+from utils import constants
 
 
 class DataManager:
 
     data: pd.DataFrame = None
     file_name: str = None   
-    details: dict = {}
-    columns: str = None
 
     def load_data(self, file_path: str) -> pd.DataFrame:
         """General function to read data provided by the user.
@@ -22,7 +21,7 @@ class DataManager:
             ValueError: File format not supported.
         """    
 
-        self.file_name = os.path.splitext(os.path.basename(file_path))[0]
+        self.file_name = os.path.basename(file_path)
 
         if file_path.endswith(".csv"):
             self.data = pd.read_csv(file_path)
@@ -41,15 +40,14 @@ class DataManager:
             output_path (str): Destination to save the report.
         """                
 
-        self.details = metrics.obtain_details(self.data, self.file_name)
-        self.columns = metrics.obtain_columns(self.data)
-
+        details = metrics.obtain_details(self.data, self.file_name)
+        columns = metrics.obtain_columns(self.data)
 
         pdf = FPDF()
         pdf.add_page()
         pdf_generator.heading(pdf)
-        pdf_generator.general_info(pdf, self.details)
-        pdf_generator.columns_info(pdf, self.columns)
+        pdf_generator.general_info(pdf, details)
+        pdf_generator.columns_info(pdf, columns)
         pdf.output(output_path, 'F')
 
 

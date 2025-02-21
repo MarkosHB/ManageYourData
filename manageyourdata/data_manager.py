@@ -12,16 +12,16 @@ class DataManager:
     file_name: str = None   
 
     def load_data(self, file_path: str) -> pd.DataFrame:
-        """General function to read data provided by the user.
+        """Function to read data provided by the user.
 
         Args:
-            file_path (str): Route to the data file.
+            file_path (str): Route where the data file is found.
 
         Raises:
             ValueError: File format not supported.
         """    
 
-        self.file_name = os.path.basename(file_path)
+        self.file_name = os.path.splitext(os.path.basename(file_path))[0]
 
         if file_path.endswith(".csv"):
             self.data = pd.read_csv(file_path)
@@ -34,10 +34,10 @@ class DataManager:
         
     
     def report_pdf(self, output_path: str):
-        """Generate the default PDF report template.
+        """Function to generate the default PDF report template.
 
         Args:
-            output_path (str): Destination to save the report.
+            output_path (str): Destination route to save the report.
         """                
 
         details = metrics.obtain_details(self.data, self.file_name)
@@ -55,7 +55,7 @@ class DataManager:
         """General function to export in determined format.
 
         Args:
-            option (str): Desired way to export the data.
+            option (str): Desired supported option for file format. 
 
         Raises:
             ValueError: Export format not supported.

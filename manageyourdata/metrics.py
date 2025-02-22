@@ -1,8 +1,8 @@
 import pandas as pd
 
 
-def obtain_details(df: pd.DataFrame, file_name: str) -> dict:
-    metrics = {}
+def general_details(df: pd.DataFrame, file_name: str) -> dict:
+    metrics = {}  # Dictionary to store dataframe general metrics.
     metrics["Archivo de datos"] = file_name
     metrics["Registros (filas)"] = str(df.shape[0])
     metrics["Campos (columnas)"] = str(df.shape[1])
@@ -11,9 +11,16 @@ def obtain_details(df: pd.DataFrame, file_name: str) -> dict:
 
     return metrics
 
-def obtain_columns(df: pd.DataFrame) -> list[str]:
-    # metrics["Tipos de datos por columna"] = df.dtypes.astype(str).to_string()
-    # metrics["Estadísticas descriptivas"] = df.describe().to_string()
-    # metrics["Valores nulos por columna"] = df.isnull().sum().to_string()
-    # metrics["Valores únicos por columna"] = df.nunique().to_string()
-    return df.columns.to_list()
+
+def fields_details(df: pd.DataFrame) -> list[dict]:
+    fields = list(dict())  # List of dicctionaries to store fields details.
+    for field in df.columns.to_list():
+        fields.append(
+            {"Nombre": field, 
+             "Tipo de datos": str(df[field].dtype), 
+             "Valores únicos": df[field].nunique(), 
+             "Valores nulos": df[field].isnull().sum(),
+            }
+        )
+
+    return fields

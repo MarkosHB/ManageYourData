@@ -40,14 +40,14 @@ class DataManager:
             output_path (str): Destination route to save the report.
         """                
 
-        details = metrics.obtain_details(self.data, self.file_name)
-        columns = metrics.obtain_columns(self.data)
+        details = metrics.general_details(self.data, self.file_name)
+        fields = metrics.fields_details(self.data)
 
         pdf = FPDF()
         pdf.add_page()
         pdf_generator.heading(pdf)
         pdf_generator.general_info(pdf, details)
-        pdf_generator.columns_info(pdf, columns)
+        pdf_generator.fields_info(pdf, fields)
         pdf.output(output_path, 'F')
 
 

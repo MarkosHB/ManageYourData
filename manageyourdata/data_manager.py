@@ -44,7 +44,6 @@ class DataManager:
         fields = metrics.fields_details(self.data)
 
         pdf = FPDF()
-        pdf.add_page()
         pdf_generator.heading(pdf)
         pdf_generator.general_info(pdf, details)
         pdf_generator.fields_info(pdf, fields)

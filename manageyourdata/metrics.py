@@ -17,9 +17,9 @@ def fields_details(df: pd.DataFrame) -> list[dict]:
     for field in df.columns.to_list():
         fields.append(
             {"Nombre": field, 
-             "Tipo de datos": str(df[field].dtype), 
-             "Valores únicos": df[field].nunique(), 
-             "Valores nulos": df[field].isnull().sum(),
+             "Tipo de dato": str(df[field].dtype), 
+             "Valores únicos": str(df[field].nunique()), 
+             "Valores nulos": str(df[field].isnull().sum()),
             }
         )
 

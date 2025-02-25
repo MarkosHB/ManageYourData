@@ -22,3 +22,22 @@ TIPO_DATO = {
     "complex64": "Número complejo de 64 bits",
     "complex128": "Número complejo de 128 bits",
 }
+
+GRAPH_MAPPING = {
+    "int64": ["hist", "box", "scatter", "line"],
+    "int32": ["hist", "box", "scatter", "line"],
+    "uint8": ["hist", "box", "scatter", "line"],
+    "uint16": ["hist", "box", "scatter", "line"],
+    "uint32": ["hist", "box", "scatter", "line"],
+    "uint64": ["hist", "box", "scatter", "line"],
+    "float64": ["hist", "box", "scatter", "line"],
+    "float32": ["hist", "box", "scatter", "line"],
+    "datetime64": ["line", "scatter"],
+    "timedelta64": ["line", "scatter"],
+    "bool": ["bar", "pie"],
+    "object": ["bar", "pie"],
+    "string": ["bar", "pie"],
+    "category": ["bar", "pie"],
+    "complex64": ["scatter"],
+    "complex128": ["scatter"],
+}

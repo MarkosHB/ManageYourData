@@ -3,5 +3,5 @@ scikit-learn
 openpyxl
 fpdf
 streamlit
-# matplotlib
+matplotlib
 # fastapi

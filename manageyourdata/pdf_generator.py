@@ -1,3 +1,4 @@
+import os
 from fpdf import FPDF
 from manageyourdata.utils import constants, styles
 
@@ -41,49 +42,60 @@ def general_info(pdf: FPDF, metrics: dict) -> None:
     pdf.ln(7)  # Bottom margin.
 
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(100, 10, "Información general sobre el conjunto de los datos: ", ln=True, align="L")
+    pdf.cell(100, 10, " ", ln=True, align="L")
+
     pdf.ln(7)  # Add space below the title.
     
 
-def fields_info(pdf: FPDF, fields: list[dict]) -> None:
+def fields_info(pdf: FPDF, fields: list[dict], file_name: str) -> None:
     """Detalles concretos de cada columna del dataframe."""
-    for column in fields:
+    for field in fields:
         pdf.add_page()
 
         # Heading.
         pdf.set_font("Arial", "B", size=16)
         pdf.set_fill_color(*styles.Color.DARK_BLUE.value)
         pdf.set_text_color(*styles.Color.WHITE.value)
-        pdf.cell(190, 12, txt=column["Nombre"], border=1, align="C", fill=True)
+        pdf.cell(190, 12, txt=field["Nombre"], border=1, align="C", fill=True)
         pdf.ln(15)  # Bottom margin.
 
         styles.reset_palette(pdf)
 
-        # Show pandas data type and easy readable.
-        pdf.set_font("Arial", style="B", size=12)
-        pdf.cell(50, 10, "Tipo de dato", ln=False, align="C")
-        pdf.set_font("Arial", size=12)
-        df_type = column["Tipo de dato"]
-        easy_type = constants.TIPO_DATO.get(df_type, "Desconocido")
-        pdf.cell(140, 10, f"{easy_type} ({df_type})", ln=True)
+        # Details displayed for each field.
+        field_info(pdf, field, "Tipo de dato")
+        field_info(pdf, field, "Valores únicos")
+        field_info(pdf, field, "Valores nulos")
 
-        styles.line_break(pdf)
-
-        pdf.set_font("Arial", style="B", size=12)
-        pdf.cell(50, 10, "Valores únicos", ln=False, align="C")
-        pdf.set_font("Arial", size=12)
-        pdf.cell(50, 10, txt=column["Valores únicos"], ln=True)
-
-        styles.line_break(pdf)
-
-        pdf.set_font("Arial", style="B", size=12)
-        pdf.cell(50, 10, "Valores nulos", ln=False, align="C")
-        pdf.set_font("Arial", size=12)
-        pdf.cell(50, 10, txt=column["Valores nulos"], ln=True)
-
-        styles.line_break(pdf)
+        # Plot from images generated.
+        show_graphs(pdf, field["Nombre"], file_name)
 
     pdf.ln()
+
+
+def field_info(pdf: FPDF, field: dict, title: str) -> None:
+    """Entradas para cada uno de los campos del dataframe."""
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(50, 10, title, ln=False, align="C")
+    pdf.set_font("Arial", size=12)
+    pdf.cell(140, 10, txt=field[title], ln=True)
+    styles.line_break(pdf)
+
+
+def show_graphs(pdf: FPDF, field: str, file_name: str) -> None:
+    """Mostrar las imagenes generadas en el pdf."""
+    images = dict()
+    path = f"images/{file_name}"
+    images[f"{field}"] = [f"{path}/{field}/{image}" for image in os.listdir(f"{path}/{field}")]
+
+    # Grid parameters (2x2).
+    x_positions = [10, 110]  # Left and right columns.
+    y_position = pdf.get_y()  # Current position.
+
+    for i, img in enumerate(next(iter(images.values()))):
+        x_position = x_positions[i % 2]
+        pdf.image(img, x=x_position, y=y_position, w=70, h=60)
+        if i % 2 == 1:  # Slide below.
+            y_position += 60 + 10
 
 
 def footer(pdf: FPDF) -> None:

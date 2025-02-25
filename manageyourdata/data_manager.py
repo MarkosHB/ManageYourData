@@ -41,12 +41,12 @@ class DataManager:
         """                
 
         details = metrics.general_details(self.data, self.file_name)
-        fields = metrics.fields_details(self.data)
+        fields = metrics.fields_details(self.data, self.file_name)
 
         pdf = FPDF()
         pdf_generator.heading(pdf)
         pdf_generator.general_info(pdf, details)
-        pdf_generator.fields_info(pdf, fields)
+        pdf_generator.fields_info(pdf, fields, self.file_name)
         pdf.output(output_path, 'F')
 
 

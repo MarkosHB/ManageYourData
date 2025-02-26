@@ -1,7 +1,6 @@
 pandas
 scikit-learn
-openpyxl
-fpdf
-streamlit
 matplotlib
-# fastapi
+fpdf
+openpyxl
+streamlit

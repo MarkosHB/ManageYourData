@@ -15,6 +15,13 @@ class Font(Enum):
     ARIAL = "Arial"
 
 
+class Size(Enum):
+    BIG = 16
+    MEDIUM_BIG = 14
+    MEDIUM = 12
+    SMALL = 10
+
+
 def reset_palette(pdf: FPDF) -> None:
         pdf.set_text_color(*Color.BLACK.value)
         pdf.set_font("Arial", size=12)

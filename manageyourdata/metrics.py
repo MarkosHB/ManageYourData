@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from manageyourdata.utils import constants
 
@@ -11,13 +12,51 @@ def general_details(df: pd.DataFrame, file_name: str) -> dict:
     metrics["Registros (filas)"] = str(df.shape[0])
     metrics["Campos (columnas)"] = str(df.shape[1])
 
-    nulls = df.isnull().sum().sum()
-    metrics["Valores nulos"] = f"{(nulls / df.size) * 100:.2f}% ({str(nulls)})"
+    nulls = df.isnull().sum()
+    total_nulls = nulls.sum()
+    metrics["Valores nulos"] = f"{(total_nulls / df.size) * 100:.2f}% ({str(total_nulls)})"
 
     duplicated = df.duplicated().sum()
     metrics["Filas duplicadas"] = f"{(duplicated / df.size) * 100:.2f}% ({str(duplicated)})"
 
+    save_nulls_distribution(nulls, f"images/{file_name}/nulls_distribution.png")
+    save_correlation_heatmap(df, f"images/{file_name}/correlation_heatmap.png")
+
     return metrics
+
+
+def save_nulls_distribution(nulls: pd.Series, filename: str):
+    """Genera y guarda un gráfico de distribución de valores nulos."""
+    if nulls.sum() > 0:  # Si hay valores nulos, genera el gráfico.
+        plt.figure(figsize=(8, 4))
+        cols_with_nulls = nulls[nulls>0].sort_values(ascending=False)
+        plt.bar(cols_with_nulls.index, cols_with_nulls.values, color="gray", edgecolor="black")
+        plt.title("Distribución de Valores Nulos")
+        plt.ylabel("Cantidad de valores nulos")
+        plt.xticks(rotation=45)
+        plt.grid(axis="y", linestyle="--", alpha=0.7)
+        plt.savefig(filename, bbox_inches="tight")
+        plt.close()
+
+
+def save_correlation_heatmap(df: pd.DataFrame, filename: str):
+    """Genera y guarda un heatmap de correlación para variables numéricas."""
+    numeric_df = df.select_dtypes(include=["number"])
+    # Only if more than one numeric column.
+    if numeric_df.shape[1] > 1:  
+        corr_matrix = numeric_df.corr(method="pearson")
+
+        plt.figure(figsize=(8, 6))
+        plt.imshow(corr_matrix, cmap="coolwarm", interpolation="nearest")
+        plt.colorbar(label="Escala de Correlación")
+
+        labels = numeric_df.columns
+        plt.xticks(np.arange(len(labels)), labels, rotation=45, ha="right")
+        plt.yticks(np.arange(len(labels)), labels)
+
+        plt.title("Mapa de Correlación usando el método de Pearson")
+        plt.savefig(filename, bbox_inches="tight")
+        plt.close()
 
 
 def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
@@ -37,16 +76,16 @@ def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
              "Valores nulos": f"{(nulls / len(df)) * 100:.2f}% ({str(nulls)})",
             }
         )
-        
+
         # Create plots for each field.
         for graph in constants.GRAPH_MAPPING[data_type]:
             os.makedirs(f"images/{file_name}/{field}", exist_ok=True)
-            save_plot(df, field, graph, f"images/{file_name}/{field}/{graph}.png")
+            save_field_plot(df, field, graph, f"images/{file_name}/{field}/{graph}.png")
 
     return fields
 
 
-def save_plot(df: pd.DataFrame, field: str, plot_type: str, filename: str):
+def save_field_plot(df: pd.DataFrame, field: str, plot_type: str, filename: str):
     """Genera y guarda un gráfico según el tipo seleccionado."""
     plt.figure(figsize=(6, 4))
 

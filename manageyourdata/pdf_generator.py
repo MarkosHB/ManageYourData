@@ -12,13 +12,13 @@ def heading(pdf: FPDF) -> None:
     pdf.rect(0, 0, 210, 25, style="F")
 
     # Left-aligned welcome heading.
-    pdf.set_font("Arial", "B", size=14)
+    pdf.set_font(styles.Font.ARIAL.value, "B", size=14)
     pdf.set_text_color(*styles.Color.WHITE.value)
     pdf.cell(0, 10, "ManageYourData ha generado el siguiente reporte", align="L")
 
     # Right-aligned link.
     pdf.set_xy(-60, 10)
-    pdf.set_font("Arial", "U", size=12)
+    pdf.set_font(styles.Font.ARIAL.value, "U", size=12)
     pdf.set_text_color(*styles.Color.LIGHT_BLUE.value)
     pdf.cell(50, 10, "Enlace a la herramienta", align="R", link=constants.GITHUB_URL)
     pdf.ln(25)  # Bottom margin.
@@ -26,25 +26,26 @@ def heading(pdf: FPDF) -> None:
     styles.reset_palette(pdf)  # Reset colors and text font.
 
 
-def general_info(pdf: FPDF, metrics: dict) -> None:
+def general_info(pdf: FPDF, metrics: dict, file_name: str) -> None:
     """Información general del reporte."""
     # Headers of the table.
-    pdf.set_font("Arial", size=12)
+    pdf.set_font(styles.Font.ARIAL.value, size=12)
     for key in metrics.keys():
         pdf.cell(38, 10, key, align="C")
     pdf.ln()
 
     # Loop through the data and create rows.
-    pdf.set_font("Arial", "B", size=12)
+    pdf.set_font(styles.Font.ARIAL.value, "B", size=12)
     for value in metrics.values():
         pdf.cell(38, 10, value, border=1, align="C")
     pdf.ln()
     pdf.ln(7)  # Bottom margin.
 
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(100, 10, " ", ln=True, align="L")
+    # Plot from images generated.
+    show_graphs(pdf, file_name)
 
-    pdf.ln(7)  # Add space below the title.
+    # Page footer.
+    footer(pdf)
     
 
 def fields_info(pdf: FPDF, fields: list[dict], file_name: str) -> None:
@@ -53,7 +54,7 @@ def fields_info(pdf: FPDF, fields: list[dict], file_name: str) -> None:
         pdf.add_page()
 
         # Heading.
-        pdf.set_font("Arial", "B", size=16)
+        pdf.set_font(styles.Font.ARIAL.value, "B", size=16)
         pdf.set_fill_color(*styles.Color.DARK_BLUE.value)
         pdf.set_text_color(*styles.Color.WHITE.value)
         pdf.cell(190, 12, txt=field["Nombre"], border=1, align="C", fill=True)
@@ -67,43 +68,46 @@ def fields_info(pdf: FPDF, fields: list[dict], file_name: str) -> None:
         field_info(pdf, field, "Valores nulos")
 
         # Plot from images generated.
-        show_graphs(pdf, field["Nombre"], file_name)
+        show_graphs(pdf, file_name, field["Nombre"])
+
+        # Page footer.
+        footer(pdf)
 
     pdf.ln()
 
 
 def field_info(pdf: FPDF, field: dict, title: str) -> None:
     """Entradas para cada uno de los campos del dataframe."""
-    pdf.set_font("Arial", style="B", size=12)
+    pdf.set_font(styles.Font.ARIAL.value, style="B", size=12)
     pdf.cell(50, 10, title, ln=False, align="C")
-    pdf.set_font("Arial", size=12)
+    pdf.set_font(styles.Font.ARIAL.value, size=12)
     pdf.cell(140, 10, txt=field[title], ln=True)
     styles.line_break(pdf)
 
 
-def show_graphs(pdf: FPDF, field: str, file_name: str) -> None:
+def show_graphs(pdf: FPDF, file_name: str, field="") -> None:
     """Mostrar las imagenes generadas en el pdf."""
     images = dict()
-    path = f"images/{file_name}"
-    images[f"{field}"] = [f"{path}/{field}/{image}" for image in os.listdir(f"{path}/{field}")]
+    path = f"images/{file_name}/{field}" if field != "" else f"images/{file_name}"
+    images[f"{field}"] = [f"{path}/{image}" for image in os.listdir(path) if image.endswith(".png")] 
 
     # Grid parameters (2x2).
-    x_positions = [10, 110]  # Left and right columns.
-    y_position = pdf.get_y()  # Current position.
+    x_positions = [25, 110]  # Left and right columns.
+    y_position = pdf.get_y() + 10  # Current position.
 
     for i, img in enumerate(next(iter(images.values()))):
         x_position = x_positions[i % 2]
         pdf.image(img, x=x_position, y=y_position, w=70, h=60)
         if i % 2 == 1:  # Slide below.
-            y_position += 60 + 10
+            y_position += 70
 
 
 def footer(pdf: FPDF) -> None:
     """Pie de página con numeración centrada."""
+    pdf.auto_page_break = False  # Stick to bottom.
     pdf.set_y(-15)  # Padding from bottom.
-    pdf.set_font("Arial", "I", size=10)
+    pdf.set_font(styles.Font.ARIAL.value, "I", size=10)
     pdf.set_draw_color(*styles.Color.GRAY.value)
-
     # Display content.
     page_number = f"Página {pdf.page_no()}"
     pdf.cell(0, 10, page_number, align="C")

@@ -11,6 +11,10 @@ class Color(Enum):
     WHITE = (255, 255, 255)
 
 
+class Font(Enum):
+    ARIAL = "Arial"
+
+
 def reset_palette(pdf: FPDF) -> None:
         pdf.set_text_color(*Color.BLACK.value)
         pdf.set_font("Arial", size=12)
@@ -20,3 +24,4 @@ def line_break(pdf: FPDF) -> None:
         pdf.set_draw_color(*Color.GRAY.value)
         pdf.line(10, pdf.get_y(), 200, pdf.get_y())
         pdf.ln(1)
+        

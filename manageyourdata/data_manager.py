@@ -45,7 +45,7 @@ class DataManager:
 
         pdf = FPDF()
         pdf_generator.heading(pdf)
-        pdf_generator.general_info(pdf, details)
+        pdf_generator.general_info(pdf, details, self.file_name)
         pdf_generator.fields_info(pdf, fields, self.file_name)
         pdf.output(output_path, 'F')
 

@@ -1,9 +1,7 @@
-GITHUB_URL = "https://github.com/MarkosHB/ManageYourData"
-
 # Currently accepted file format.
 FORMAT = {"excel": ".xlsx", "csv": ".csv"}
 
-# Tipos de datos de pandas DataFrame.
+# Pandas DataFrame data types.
 TIPO_DATO = {
     "object": "Cadena de caracteres",
     "string": "Cadena de caracteres",
@@ -41,3 +39,9 @@ GRAPH_MAPPING = {
     "complex64": ["scatter"],
     "complex128": ["scatter"],
 }
+
+# Number of labels shown in plots.
+MAX_LABELS = 10
+
+# References.
+GITHUB_URL = "https://github.com/MarkosHB/ManageYourData"

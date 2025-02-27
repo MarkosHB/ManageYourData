@@ -19,44 +19,13 @@ def general_details(df: pd.DataFrame, file_name: str) -> dict:
     duplicated = df.duplicated().sum()
     metrics["Filas duplicadas"] = f"{(duplicated / df.size) * 100:.2f}% ({str(duplicated)})"
 
+    # Generate associated plots.
+    os.makedirs(f"images/{file_name}", exist_ok=True)
+    save_field_types(df, f"images/{file_name}/field_types.png")
     save_nulls_distribution(nulls, f"images/{file_name}/nulls_distribution.png")
     save_correlation_heatmap(df, f"images/{file_name}/correlation_heatmap.png")
 
     return metrics
-
-
-def save_nulls_distribution(nulls: pd.Series, filename: str):
-    """Genera y guarda un gráfico de distribución de valores nulos."""
-    if nulls.sum() > 0:  # Si hay valores nulos, genera el gráfico.
-        plt.figure(figsize=(8, 4))
-        cols_with_nulls = nulls[nulls>0].sort_values(ascending=False)
-        plt.bar(cols_with_nulls.index, cols_with_nulls.values, color="gray", edgecolor="black")
-        plt.title("Distribución de Valores Nulos")
-        plt.ylabel("Cantidad de valores nulos")
-        plt.xticks(rotation=45)
-        plt.grid(axis="y", linestyle="--", alpha=0.7)
-        plt.savefig(filename, bbox_inches="tight")
-        plt.close()
-
-
-def save_correlation_heatmap(df: pd.DataFrame, filename: str):
-    """Genera y guarda un heatmap de correlación para variables numéricas."""
-    numeric_df = df.select_dtypes(include=["number"])
-    # Only if more than one numeric column.
-    if numeric_df.shape[1] > 1:  
-        corr_matrix = numeric_df.corr(method="pearson")
-
-        plt.figure(figsize=(8, 6))
-        plt.imshow(corr_matrix, cmap="coolwarm", interpolation="nearest")
-        plt.colorbar(label="Escala de Correlación")
-
-        labels = numeric_df.columns
-        plt.xticks(np.arange(len(labels)), labels, rotation=45, ha="right")
-        plt.yticks(np.arange(len(labels)), labels)
-
-        plt.title("Mapa de Correlación usando el método de Pearson")
-        plt.savefig(filename, bbox_inches="tight")
-        plt.close()
 
 
 def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
@@ -72,8 +41,12 @@ def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
         fields.append(
             {"Nombre": field, 
              "Tipo de dato": f"{easy_type} ({data_type})", 
-             "Valores únicos": str(df[field].nunique()), 
-             "Valores nulos": f"{(nulls / len(df)) * 100:.2f}% ({str(nulls)})",
+             "Valores nulos": f"La proporción de instancias vacías es de un {(nulls / len(df)) * 100:.2f}% ({str(nulls)})",
+             "Valores únicos": f"Existen {str(df[field].nunique())} instancias diferentes para las {len(df)} entradas", 
+             "Moda": f"La instancia más repetida es: {df[field].mode().values[0]}" if df[field].nunique() > 0 else "No existen valores únicos",
+             "Mediana": f"La instancia central es: {df[field].median()}" if data_type == "int64" or data_type == "float64" else "No aplicable al tipo de datos",
+             "Media": f"La instancia promedio es: {df[field].mean().round(2)}" if data_type == "int64" or data_type == "float64" else "No aplicable al tipo de datos",
+             "DE": f"La desviación estándar es: {df[field].std().round(2)}" if data_type == "int64" or data_type == "float64" else "No aplicable al tipo de datos",
             }
         )
 
@@ -85,9 +58,62 @@ def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
     return fields
 
 
-def save_field_plot(df: pd.DataFrame, field: str, plot_type: str, filename: str):
+def save_field_types(df: pd.DataFrame, file_path: str):
+    """Genera y guarda un gráfico de tipos de datos de las columnas."""
+    types = df.dtypes.value_counts().sort_values(ascending=False)
+    plt.figure(figsize=(6, 4))
+    plt.bar(types.index.astype(str), types.values, color="green", edgecolor="black")
+    plt.title("Distribución de Tipos de Datos")
+    plt.ylabel("Total de columnas")
+    plt.grid(axis="y", linestyle="--", alpha=0.7)
+    plt.savefig(file_path, bbox_inches="tight")
+    plt.close()
+
+
+def save_nulls_distribution(nulls: pd.Series, file_path: str):
+    """Genera y guarda un gráfico de distribución de valores nulos."""
+    if nulls.sum() > 0:  # Si hay valores nulos, genera el gráfico.
+        plt.figure(figsize=(8, 4))
+        cols_with_nulls = nulls[nulls>0].sort_values(ascending=False)
+        plt.bar(cols_with_nulls.index, cols_with_nulls.values, color="gray", edgecolor="black")
+        plt.title("Distribución de Valores Nulos")
+        plt.ylabel("Cantidad de valores nulos")
+        plt.xticks(rotation=45)
+        plt.grid(axis="y", linestyle="--", alpha=0.7)
+        plt.savefig(file_path, bbox_inches="tight")
+        plt.close()
+
+
+def save_correlation_heatmap(df: pd.DataFrame, file_path: str):
+    """Genera y guarda un heatmap de correlación para variables numéricas."""
+    numeric_df = df.select_dtypes(include=["number"])
+    # Only if more than one numeric column.
+    if numeric_df.shape[1] > 1:  
+        corr_matrix = numeric_df.corr(method="pearson")
+
+        plt.figure(figsize=(8, 6))
+        plt.imshow(corr_matrix, cmap="coolwarm", interpolation="nearest")
+        plt.colorbar(label="Escala de Correlación")
+
+        labels = numeric_df.columns
+        plt.xticks(np.arange(len(labels)), labels, rotation=45, ha="right")
+        plt.yticks(np.arange(len(labels)), labels)
+
+        plt.title("Mapa de Correlación usando el método de Pearson")
+        plt.savefig(file_path, bbox_inches="tight")
+        plt.close()
+
+
+def save_field_plot(df: pd.DataFrame, field: str, plot_type: str, file_path: str):
     """Genera y guarda un gráfico según el tipo seleccionado."""
     plt.figure(figsize=(6, 4))
+    # Hide labels if too many values.
+    if df[field].nunique() > constants.MAX_LABELS: 
+        show_vals = None
+        info = None
+    else: 
+        show_vals = df[field].value_counts().index.tolist() 
+        info = '%1.1f%%'
 
     if plot_type == "hist":
         df[field].hist(bins=20, color="royalblue", edgecolor="black")
@@ -102,7 +128,7 @@ def save_field_plot(df: pd.DataFrame, field: str, plot_type: str, filename: str)
     elif plot_type == "scatter":
         num_cols = df.select_dtypes(include=["number"]).columns
         if len(num_cols) < 2:
-            return
+            return  # Do not generate.
         plt.scatter(df[num_cols[0]], df[num_cols[1]], alpha=0.5, color="darkblue")
         plt.xlabel(num_cols[0])
         plt.ylabel(num_cols[1])
@@ -116,16 +142,16 @@ def save_field_plot(df: pd.DataFrame, field: str, plot_type: str, filename: str)
 
     elif plot_type == "bar":
         df[field].value_counts().plot(kind="bar", color="royalblue")
+        if show_vals is None: plt.xticks([])
         plt.xlabel(field)
         plt.ylabel("Frecuencia")
         plt.title(f"Gráfico de Barras de {field}")
 
     elif plot_type == "pie":
-        df[field].value_counts().plot(kind="pie", autopct="%1.1f%%", 
-                                      startangle=90, colors=["royalblue", "lightblue"])
-        plt.ylabel("")
+        df[field].value_counts().plot(kind="pie", labels=show_vals, autopct=info, startangle=90)
+        plt.ylabel("")  # Not important.
         plt.title(f"Gráfico circular de {field}")
 
     plt.grid(True)
-    plt.savefig(filename, bbox_inches="tight")
+    plt.savefig(file_path, bbox_inches="tight")
     plt.close()

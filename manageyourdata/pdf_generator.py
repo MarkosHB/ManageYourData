@@ -64,8 +64,12 @@ def fields_info(pdf: FPDF, fields: list[dict], file_name: str) -> None:
 
         # Details displayed for each field.
         field_info(pdf, field, "Tipo de dato")
-        field_info(pdf, field, "Valores únicos")
         field_info(pdf, field, "Valores nulos")
+        field_info(pdf, field, "Valores únicos")
+        field_info(pdf, field, "Moda")
+        field_info(pdf, field, "Mediana")
+        field_info(pdf, field, "Media")
+        field_info(pdf, field, "DE")
 
         # Plot from images generated.
         show_graphs(pdf, file_name, field["Nombre"])

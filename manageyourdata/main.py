@@ -14,7 +14,7 @@ def main():
     # Initialize parser object.
     parser = argparse.ArgumentParser(
         description="ManageYourData is a tool for visualizing and analyzing files locally.",
-        epilog="For support, visit 'https://github.com/MarkosHB/ManageYourData'. Please report any bugs or feature requests."
+        epilog=f"For support, visit {constants.GITHUB_URL}. Please report any bugs or feature requests."
     )
 
     # Define the mandatory argument of all ocurrences.

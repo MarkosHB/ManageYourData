@@ -72,36 +72,42 @@ def save_field_types(df: pd.DataFrame, file_path: str):
 
 def save_nulls_distribution(nulls: pd.Series, file_path: str):
     """Genera y guarda un gráfico de distribución de valores nulos."""
-    if nulls.sum() > 0:  # Si hay valores nulos, genera el gráfico.
-        plt.figure(figsize=(8, 4))
-        cols_with_nulls = nulls[nulls>0].sort_values(ascending=False)
-        plt.bar(cols_with_nulls.index, cols_with_nulls.values, color="gray", edgecolor="black")
-        plt.title("Distribución de Valores Nulos")
-        plt.ylabel("Cantidad de valores nulos")
-        plt.xticks(rotation=45)
-        plt.grid(axis="y", linestyle="--", alpha=0.7)
-        plt.savefig(file_path, bbox_inches="tight")
-        plt.close()
+    # Only if null values appear.
+    if nulls.sum() <= 0:  
+        return 
+    
+    # Generate plot.
+    plt.figure(figsize=(8, 4))
+    cols_with_nulls = nulls[nulls>0].sort_values(ascending=False)
+    plt.bar(cols_with_nulls.index, cols_with_nulls.values, color="gray", edgecolor="black")
+    plt.title("Distribución de Valores Nulos")
+    plt.ylabel("Cantidad de valores nulos")
+    plt.xticks(rotation=45)
+    plt.grid(axis="y", linestyle="--", alpha=0.7)
+    plt.savefig(file_path, bbox_inches="tight")
+    plt.close()
 
 
 def save_correlation_heatmap(df: pd.DataFrame, file_path: str):
     """Genera y guarda un heatmap de correlación para variables numéricas."""
     numeric_df = df.select_dtypes(include=["number"])
     # Only if more than one numeric column.
-    if numeric_df.shape[1] > 1:  
-        corr_matrix = numeric_df.corr(method="pearson")
+    if numeric_df.shape[1] <= 1:  
+        return
+    
+    corr_matrix = numeric_df.corr(method="pearson")
 
-        plt.figure(figsize=(8, 6))
-        plt.imshow(corr_matrix, cmap="coolwarm", interpolation="nearest")
-        plt.colorbar(label="Escala de Correlación")
+    plt.figure(figsize=(8, 6))
+    plt.imshow(corr_matrix, cmap="coolwarm", interpolation="nearest")
+    plt.colorbar(label="Escala de Correlación")
 
-        labels = numeric_df.columns
-        plt.xticks(np.arange(len(labels)), labels, rotation=45, ha="right")
-        plt.yticks(np.arange(len(labels)), labels)
+    labels = numeric_df.columns
+    plt.xticks(np.arange(len(labels)), labels, rotation=45, ha="right")
+    plt.yticks(np.arange(len(labels)), labels)
 
-        plt.title("Mapa de Correlación usando el método de Pearson")
-        plt.savefig(file_path, bbox_inches="tight")
-        plt.close()
+    plt.title("Mapa de Correlación usando el método de Pearson")
+    plt.savefig(file_path, bbox_inches="tight")
+    plt.close()
 
 
 def save_field_plot(df: pd.DataFrame, field: str, plot_type: str, file_path: str):
@@ -115,6 +121,7 @@ def save_field_plot(df: pd.DataFrame, field: str, plot_type: str, file_path: str
         show_vals = df[field].value_counts().index.tolist() 
         info = '%1.1f%%'
 
+    # Generate plot.
     if plot_type == "hist":
         df[field].hist(bins=20, color="royalblue", edgecolor="black")
         plt.xlabel(field)
@@ -124,21 +131,6 @@ def save_field_plot(df: pd.DataFrame, field: str, plot_type: str, file_path: str
     elif plot_type == "box":
         df.boxplot(column=[field])
         plt.title(f"Boxplot de {field}")
-
-    elif plot_type == "scatter":
-        num_cols = df.select_dtypes(include=["number"]).columns
-        if len(num_cols) < 2:
-            return  # Do not generate.
-        plt.scatter(df[num_cols[0]], df[num_cols[1]], alpha=0.5, color="darkblue")
-        plt.xlabel(num_cols[0])
-        plt.ylabel(num_cols[1])
-        plt.title(f"Dispersión: {num_cols[0]} vs {num_cols[1]}")
-
-    elif plot_type == "line":
-        df[field].plot(kind="line", color="royalblue")
-        plt.xlabel("Índice")
-        plt.ylabel(field)
-        plt.title(f"Gráfico de Línea de {field}")
 
     elif plot_type == "bar":
         df[field].value_counts().plot(kind="bar", color="royalblue")

@@ -22,22 +22,18 @@ TIPO_DATO = {
 }
 
 GRAPH_MAPPING = {
-    "int64": ["hist", "box", "scatter", "line"],
-    "int32": ["hist", "box", "scatter", "line"],
-    "uint8": ["hist", "box", "scatter", "line"],
-    "uint16": ["hist", "box", "scatter", "line"],
-    "uint32": ["hist", "box", "scatter", "line"],
-    "uint64": ["hist", "box", "scatter", "line"],
-    "float64": ["hist", "box", "scatter", "line"],
-    "float32": ["hist", "box", "scatter", "line"],
-    "datetime64": ["line", "scatter"],
-    "timedelta64": ["line", "scatter"],
+    "int64": ["hist", "box"],
+    "int32": ["hist", "box"],
+    "uint8": ["hist", "box"],
+    "uint16": ["hist", "box"],
+    "uint32": ["hist", "box"],
+    "uint64": ["hist", "box"],
+    "float64": ["hist", "box"],
+    "float32": ["hist", "box"],
     "bool": ["bar", "pie"],
     "object": ["bar", "pie"],
     "string": ["bar", "pie"],
     "category": ["bar", "pie"],
-    "complex64": ["scatter"],
-    "complex128": ["scatter"],
 }
 
 # Number of labels shown in plots.

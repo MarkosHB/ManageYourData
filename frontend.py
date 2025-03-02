@@ -5,25 +5,6 @@ from manageyourdata.data_manager import DataManager
 from manageyourdata.utils import constants
 
 
-def display_pdf(file_path):
-    """Show a PDF inside a iframe in Streamlit."""
-    
-    with open(file_path, "rb") as f:
-        b64_pdf = base64.b64encode(f.read()).decode()
-    
-    pdf_display = f"""
-    <div style="margin-top: 40px;">
-        <iframe 
-            src="data:application/pdf;base64,{b64_pdf}" 
-            width="100%"
-            height="700" 
-            style="border: none;">
-        </iframe>
-    </div>
-    """
-    return pdf_display
-
-
 # Configure the page.
 st.set_page_config(
     page_title="ManageYourData - Generate a report of your data", 
@@ -49,11 +30,16 @@ with col1:
     report_path = f"reports/{dm.file_name}-report.pdf"
     
     # Display button to generate report.
-    if st.button(label="Obtenga el reporte generado", use_container_width=True, icon="📥"):
-        if not os.path.exists(report_path): dm.report_pdf(report_path)
-        st.session_state.show_pdf = True
-    else:
-        st.session_state.show_pdf = False
+    with open(report_path, "rb") as f:
+        data_pdf = f.read()
+    st.download_button(
+        label="Descargue el fichero convertido",
+        data=data_pdf,
+        file_name=f"{dm.file_name}-exported.pdf",
+        mime=f"application/pdf",
+        icon="📋", 
+        use_container_width=True,
+    )
     
 with col2:
     # Select format to export data.  
@@ -80,7 +66,3 @@ with col2:
         icon="📋", 
         use_container_width=True,
     )
-
-# Display PDF report if needed.
-if "show_pdf" in st.session_state and st.session_state.show_pdf:
-    st.markdown(display_pdf(report_path), unsafe_allow_html=True)

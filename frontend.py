@@ -33,14 +33,14 @@ with col1:
     with open(report_path, "rb") as f:
         data_pdf = f.read()
     st.download_button(
-        label="Descargue el fichero convertido",
+        label="Obtenga el reporte generado",
         data=data_pdf,
         file_name=f"{dm.file_name}-exported.pdf",
         mime=f"application/pdf",
-        icon="📋", 
+        icon="📥", 
         use_container_width=True,
     )
-    
+
 with col2:
     # Select format to export data.  
     opt = st.selectbox(

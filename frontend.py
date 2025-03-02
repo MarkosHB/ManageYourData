@@ -32,10 +32,11 @@ with col1:
     # Display button to generate report.
     with open(report_path, "rb") as f:
         data_pdf = f.read()
+        
     st.download_button(
         label="Obtenga el reporte generado",
         data=data_pdf,
-        file_name=f"{dm.file_name}-exported.pdf",
+        file_name=f"{dm.file_name}-report.pdf",
         mime=f"application/pdf",
         icon="📥", 
         use_container_width=True,

@@ -57,7 +57,7 @@ pip install -r requirements.txt
 pip install .
 ```
 > [!Warning]
-> El paquete de Python ManageYourData no ha sido publicado, por lo que debe ser descargado y compilado manualmente.
+> El paquete de Python no ha sido publicado, por lo que debe ser descargado y compilado manualmente.
 
 Finalmente, usted podrá elegir una de las siguientes opciones:
 #### A) 🔺Interactuar mediante consola con la herramienta.
@@ -117,8 +117,8 @@ docker run --name ManageYourData -p 8501:8501 streamlit_app
 ```
 
 > [!Important]
-> Para su correcto funcionamiento, deben existir las carpetas auxiliares `images/` y `exports/` por motivos de diseño.\
-> No obstante, se recomienda tener creadas otras como `data/` o  `reports/` para organizar los archivos empleados.
+> Para su correcto funcionamiento, deben existir las carpetas `images/` y `exports/` por motivos de diseño.\
+> No obstante, se recomienda tener creadas `data/` y  `reports/` para organizar los archivos empleados.
 
 ---
 

@@ -61,6 +61,7 @@ class DataManager:
         """        
 
         file_extension = constants.FORMAT[option]
+        os.makedirs(f"exports", exist_ok=True)
         export_path = f"exports/{self.file_name}-exported{file_extension}"
         
         if file_extension == ".csv":

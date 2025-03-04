@@ -92,7 +92,7 @@ docker run --name ManageYourData -p 8501:8501 streamlit_app
 > dm = DataManager()
 > dm.load_data("data/titanic.csv")
 > dm.report_pdf("reports/titanic-report.pdf")
-> dm.export_data("exports/titanic-exported.xlsx)
+> dm.export_data("exports/titanic-exported.xlsx")
 > ```
 
 ---

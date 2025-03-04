@@ -6,17 +6,19 @@ from manageyourdata.utils import constants
 
 
 def general_details(df: pd.DataFrame, file_name: str) -> dict:
+    """Principales características del conjuto de los datos."""
     metrics = {}  # Dictionary to store dataframe general metrics.
 
+    # Usefull variables.
+    nulls = df.isnull().sum()
+    total_nulls = nulls.sum()
+    duplicated = df.duplicated().sum()
+
+    # Populate with relevant information.
     metrics["Archivo de datos"] = file_name
     metrics["Registros (filas)"] = str(df.shape[0])
     metrics["Campos (columnas)"] = str(df.shape[1])
-
-    nulls = df.isnull().sum()
-    total_nulls = nulls.sum()
     metrics["Valores nulos"] = f"{(total_nulls / df.size) * 100:.2f}% ({str(total_nulls)})"
-
-    duplicated = df.duplicated().sum()
     metrics["Filas duplicadas"] = f"{(duplicated / df.size) * 100:.2f}% ({str(duplicated)})"
 
     # Generate associated plots.
@@ -29,6 +31,7 @@ def general_details(df: pd.DataFrame, file_name: str) -> dict:
 
 
 def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
+    """Principales características de la columna en particular."""
     fields = list(dict())  # List of dicctionaries to store fields details.
 
     for field in df.columns.to_list():
@@ -36,19 +39,34 @@ def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
         data_type = str(df[field].dtype)
         easy_type = constants.TIPO_DATO.get(data_type, "Desconocido")
         nulls = df[field].isnull().sum().sum()
+        uniques = df[field].nunique()
 
-        # Update the object with obtained details.
-        fields.append(
-            {"Nombre": field, 
-             "Tipo de dato": f"{easy_type} ({data_type})", 
-             "Valores nulos": f"La proporción de instancias vacías es de un {(nulls / len(df)) * 100:.2f}% ({str(nulls)})",
-             "Valores únicos": f"Existen {str(df[field].nunique())} instancias diferentes para las {len(df)} entradas", 
-             "Moda": f"La instancia más repetida es: {df[field].mode().values[0]}" if df[field].nunique() > 0 else "No existen valores únicos",
-             "Mediana": f"La instancia central es: {df[field].median()}" if data_type == "int64" or data_type == "float64" else "No aplicable al tipo de datos",
-             "Media": f"La instancia promedio es: {df[field].mean().round(2)}" if data_type == "int64" or data_type == "float64" else "No aplicable al tipo de datos",
-             "DE": f"La desviación estándar es: {df[field].std().round(2)}" if data_type == "int64" or data_type == "float64" else "No aplicable al tipo de datos",
-            }
-        )
+        # Create new details entry.
+        field_details = {
+            "Nombre": field,
+            "Tipo de dato": f"{easy_type} ({data_type})",
+            "Valores nulos": f"La proporción de instancias vacías es de un {(nulls / len(df)) * 100:.2f}% ({str(nulls)})",
+            "Valores únicos": f"Existen {str(uniques)} instancias diferentes para las {len(df)} entradas",
+            "Moda": f"La instancia más repetida es: {df[field].mode().values[0]}" if uniques > 0 else "No existen valores únicos",
+        }
+
+        # Add more statistics only when field is numeric.
+        if pd.api.types.is_numeric_dtype(df[field]):
+            field_details.update({
+                "Mediana": f"La instancia central es: {df[field].median()}",
+                "Media": f"La instancia promedio es: {df[field].mean().round(2)}",
+                "DE": f"La desviación estándar es: {df[field].std().round(2)}",
+            })
+        else:
+            default_msg = "No aplicable al tipo de datos"
+            field_details.update({
+                "Mediana": default_msg,
+                "Media": default_msg,
+                "DE": default_msg,
+            })
+            
+        # Finish packaging information.
+        fields.append(field_details)
 
         # Create plots for each field.
         for graph in constants.GRAPH_MAPPING[data_type]:
@@ -95,9 +113,8 @@ def save_correlation_heatmap(df: pd.DataFrame, file_path: str):
     if numeric_df.shape[1] <= 1:  
         return
     
-    corr_matrix = numeric_df.corr(method="pearson")
-
     plt.figure(figsize=(8, 6))
+    corr_matrix = numeric_df.corr(method="pearson")
     plt.imshow(corr_matrix, cmap="coolwarm", interpolation="nearest")
     plt.colorbar(label="Escala de Correlación")
 

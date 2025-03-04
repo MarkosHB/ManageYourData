@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from fpdf import FPDF
 from manageyourdata import metrics
-import manageyourdata.pdf_generator as pdf_generator
+from manageyourdata import pdf_generator
 from manageyourdata.utils import constants
 
 

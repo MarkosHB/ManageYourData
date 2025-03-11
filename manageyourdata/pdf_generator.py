@@ -69,6 +69,8 @@ def fields_info(pdf: FPDF, fields: list[dict], file_name: str) -> None:
         field_info(pdf, field, "Moda")
         field_info(pdf, field, "Mediana")
         field_info(pdf, field, "Media")
+        field_info(pdf, field, "Máximo")
+        field_info(pdf, field, "Mínimo")
         field_info(pdf, field, "DE")
 
         # Plot from images generated.

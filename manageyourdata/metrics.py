@@ -55,6 +55,8 @@ def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
             field_details.update({
                 "Mediana": f"La instancia central es: {df[field].median()}",
                 "Media": f"La instancia promedio es: {df[field].mean().round(2)}",
+                "Máximo": f"El mayor valor numérico es: {df[field].max()}",
+                "Mínimo": f"El menor valor numérico es: {df[field].min()}",
                 "DE": f"La desviación estándar es: {df[field].std().round(2)}",
             })
         else:
@@ -62,6 +64,8 @@ def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
             field_details.update({
                 "Mediana": default_msg,
                 "Media": default_msg,
+                "Máximo": default_msg,
+                "Mínimo": default_msg,
                 "DE": default_msg,
             })
             

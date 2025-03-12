@@ -52,8 +52,10 @@ def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
 
         # Add more statistics only when field is numeric.
         if pd.api.types.is_numeric_dtype(df[field]):
+            quantiles = df[field].quantile([0.25, 0.75])
             field_details.update({
-                "Mediana": f"La instancia central es: {df[field].median()}",
+                "Percentiles": f"Q1 (0.25) = {quantiles.loc[0.25]} ; Q3 (0.75) = {quantiles.loc[0.75]}",
+                "Mediana": f"La instancia central Q2 (0.5) es: {df[field].median()}",
                 "Media": f"La instancia promedio es: {df[field].mean().round(2)}",
                 "Máximo": f"El mayor valor numérico es: {df[field].max()}",
                 "Mínimo": f"El menor valor numérico es: {df[field].min()}",
@@ -63,6 +65,7 @@ def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
             default_msg = "No aplicable al tipo de datos"
             field_details.update({
                 "Mediana": default_msg,
+                "Percentiles": default_msg,
                 "Media": default_msg,
                 "Máximo": default_msg,
                 "Mínimo": default_msg,

@@ -52,9 +52,13 @@ def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
 
         # Add more statistics only when field is numeric.
         if pd.api.types.is_numeric_dtype(df[field]):
-            quantiles = df[field].quantile([0.25, 0.75])
+            Q1 = df[field].quantile(0.25)
+            Q3 = df[field].quantile(0.75)
+            IQR = Q3-Q1
+            outliers = ((df[field]<(Q1-1.5*IQR)) | (df[field]>(Q3+1.5*IQR))).sum()
             field_details.update({
-                "Percentiles": f"Q1 (0.25) = {quantiles.loc[0.25]} ; Q3 (0.75) = {quantiles.loc[0.75]}",
+                "Percentiles": f"Q1 (0.25) = {Q1} ; Q3 (0.75) = {Q3}",
+                "Outliers": f"El porcentaje de valores atípicos es {(outliers / len(df)) * 100:.2f}% ({outliers})",
                 "Mediana": f"La instancia central Q2 (0.5) es: {df[field].median()}",
                 "Media": f"La instancia promedio es: {df[field].mean().round(2)}",
                 "Máximo": f"El mayor valor numérico es: {df[field].max()}",
@@ -66,6 +70,7 @@ def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
             field_details.update({
                 "Mediana": default_msg,
                 "Percentiles": default_msg,
+                "Outliers": default_msg,
                 "Media": default_msg,
                 "Máximo": default_msg,
                 "Mínimo": default_msg,

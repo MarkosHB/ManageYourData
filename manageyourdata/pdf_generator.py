@@ -68,6 +68,7 @@ def fields_info(pdf: FPDF, fields: list[dict], file_name: str) -> None:
         field_info(pdf, field, "Valores únicos")
         field_info(pdf, field, "Moda")
         field_info(pdf, field, "Percentiles")
+        field_info(pdf, field, "Outliers")
         field_info(pdf, field, "Mediana")
         field_info(pdf, field, "Media")
         field_info(pdf, field, "Máximo")

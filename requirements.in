@@ -3,3 +3,4 @@ matplotlib
 fpdf
 openpyxl
 streamlit
+fastapi[standard]

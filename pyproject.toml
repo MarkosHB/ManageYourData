@@ -16,6 +16,7 @@ dependencies = [
     "fpdf",
     "openpyxl",
     "streamlit",
+    "fastapi[standard]",
 ]
 [project.scripts]
 manageyourdata = "manageyourdata.main:main"

@@ -70,18 +70,23 @@ manageyourdata -f data/titanic.csv -r reports/titanic-report.pdf -e excel
 streamlit run frontend.py
 ```
 
+#### C) 🔺Levantar un servidor que atienda las peticiones con FastAPI.
+```bash
+fastapi dev api.py
+```
+
 ### 2. 🔹 Ejecutando el contenedor Docker con la aplicación.
 > [!Caution]
 > Desde este instante usted deberá tener instalado Docker si desea seguir con este método.
 
 En primer lugar, deberá crear la imagen de la aplicación...
 ```bash
-docker build -t streamlit_app .
+docker build -t manage_your_data .
 ```
 
 ... para después ejecutar un contenedor incluyéndola.
 ```bash
-docker run --name ManageYourData -p 8501:8501 streamlit_app
+docker run --name ManageYourData -p 8501:8501 manage_your_data
 ```
 
 > [!Tip]

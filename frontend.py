@@ -67,7 +67,8 @@ with st.sidebar:
 ############################
 
 st.title(":wave: Bienvenido a :blue[ManageYourData]")
-st.text("Una herramienta para gestionar y analizar tus datos en local de forma sencilla.")
+st.subheader("Gestiona y analiza tus datos en local de forma sencilla.")
+
 
 # Basic operations.
 dm = DataManager()
@@ -94,7 +95,6 @@ with col1:
             st.rerun()
             st.toast("Reporte PDF generado correctamente", icon="✅")
 
-
 with col2:
     # Select format to export data.
     opt = st.selectbox(
@@ -120,10 +120,24 @@ st.divider()
 
 if file and provider:
     # Create tabs to display PDF report and ask questions.
-    tab1, tab2 = st.tabs(["❓ Conversar con el archivo de datos", "📄 Visualizar reporte PDF",])
-
+    tab1, tab2 = st.tabs(["Visualizar reporte PDF", "Conversar con los datos",])
 
     with tab1:
+        # Display PDF download button and report.
+        if os.path.exists(report_path):
+            with open(report_path, "rb") as file:
+                btn = st.download_button(
+                    label="Descárguelo pulsando aquí",
+                    data=file,
+                    file_name="report.pdf",
+                    mime="application/pdf",
+                    icon="📥", 
+                )
+            st.pdf(report_path, height=850)
+        else:
+            st.info("Genere primero el reporte PDF para visualizarlo aquí.")
+
+    with tab2:  
         # Get question from user.
         user_question = st.text_input(
             label="Escriba su pregunta sobre el conjunto de datos seleccionado.",
@@ -144,10 +158,3 @@ if file and provider:
             response = agent.invoke(user_question)
             # Display response.
             st.write(response)
-
-    with tab2:
-        # Display PDF report.
-        if os.path.exists(report_path):
-            st.pdf(report_path, height=850)
-        else:
-            st.info("Genere primero el reporte PDF para visualizarlo aquí.")

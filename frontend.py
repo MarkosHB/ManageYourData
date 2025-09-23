@@ -3,36 +3,7 @@ import streamlit as st
 from manageyourdata.data_manager import DataManager
 from manageyourdata.utils import constants
 from manageyourdata.models import create_llm_agent, get_frontend_info
-from langchain_ollama import ChatOllama
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
-
-
-def interactive_file_tree(path):
-    """Generates an interactive file tree with checkboxes for file deletion."""
-    for root, dirs, files in os.walk(path, topdown=True):
-        # Sort directories and files for consistent order
-        dirs.sort()
-        files.sort()
-
-        # Exclude __pycache__ from the listing
-        if "__pycache__" in dirs:
-            dirs.remove("__pycache__")
-
-        level = root.replace(path, "").count(os.sep)
-        indent = "    " * level
-
-        # Display the directory
-        if level == 0:
-            st.write(f"📁 {os.path.basename(path)}")
-        else:
-            st.write(f"{indent}📁 {os.path.basename(root)}")
-
-        # Display files with checkboxes
-        sub_indent = "    " * (level + 1)
-        for f in files:
-            file_path = os.path.join(root, f)
-            st.checkbox(f"{sub_indent}📄 {f}", key=file_path)
 
 
 # Configure the page.
@@ -41,7 +12,6 @@ st.set_page_config(
     page_icon=":bar_chart:",
     initial_sidebar_state="expanded"
 )
-
 
 #########################
 # Slider content display.
@@ -66,8 +36,7 @@ with st.sidebar:
         )
 
         # Option to set API key as environment variable.
-        set_env = st.checkbox(
-            "Establecer como variable de entorno", value=True)
+        set_env = st.checkbox("Establecer como variable de entorno", value=True)
         if set_env:
             os.environ["GOOGLE_API_KEY"] = api_key
 
@@ -78,35 +47,19 @@ with st.sidebar:
 
     st.divider()
 
-    st.title("📋 Estructura del proyecto")
+    st.title("📋 Sistema de ficheros")
+    st.subheader("Contenido de la carpeta :blue[/data]")
+    st.write(os.listdir("./data"))
+    st.subheader("Contenido de la carpeta :blue[/reports]")
+    st.write(os.listdir("./reports"))
+    st.subheader("Contenido de la carpeta :blue[/exports]")
+    st.write(os.listdir("./exports"))
 
-    # Create a form to contain the file tree and the delete button
-    with st.form(key="file_delete_form"):
-        dirs_to_show = ["data", "reports", "exports"]
-        for directory in dirs_to_show:
-            if os.path.isdir(directory):
-                interactive_file_tree(directory)
-        submit_button = st.form_submit_button(
-            label="Eliminar archivos seleccionados")
+    st.divider()
 
-    if submit_button:
-        files_to_delete = [
-            key for key, value in st.session_state.items() if value and os.path.isfile(key)]
-
-        for file_path in files_to_delete:
-            try:
-                os.remove(file_path)
-                st.success(f"Eliminado: {file_path}")
-                # Uncheck the box after deletion
-                st.session_state[file_path] = False
-            except Exception as e:
-                st.error(f"Error al eliminar {file_path}: {e}")
-
-        # Rerun to update the file tree display
-        st.rerun()
-
-    st.image("./manageyourdata/utils/image.jpg")
+    st.title("📚 Referencias")
     st.link_button(label="Repositorio de Github", url=f"{constants.GITHUB_URL}", icon="🔗")
+    st.image("./manageyourdata/utils/image.jpg")
 
 
 ############################

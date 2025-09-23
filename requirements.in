@@ -3,4 +3,9 @@ matplotlib
 fpdf
 openpyxl
 streamlit
+streamlit[pdf]
 fastapi[standard]
+langchain-ollama
+langchain-experimental
+langchain-google-genai
+tabulate

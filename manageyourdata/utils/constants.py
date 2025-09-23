@@ -1,6 +1,9 @@
 # Currently accepted file format.
 FORMAT = {"excel": ".xlsx", "csv": ".csv"}
 
+# Model providers for llm agents.
+MODEL_PROVIDERS = ["Ollama", "Google"]
+
 # Pandas DataFrame data types.
 TIPO_DATO = {
     "object": "Cadena de caracteres",
@@ -21,6 +24,7 @@ TIPO_DATO = {
     "complex128": "Número complejo de 128 bits",
 }
 
+# Mapping of data types to suitable graphs.
 GRAPH_MAPPING = {
     "int64": ["hist", "box"],
     "int32": ["hist", "box"],

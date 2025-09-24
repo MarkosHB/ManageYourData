@@ -1,6 +1,8 @@
 # Generador Automático de Reportes PDF 🚀 [ManageYourData](https://github.com/MarkosHB/ManageYourData)
 
-**ManageYourData** es una herramienta diseñada para analizar datasets de manera automática y generar **reportes detallados en formato PDF** con métricas clave con la finalidad de facilitar la comprensión del mismo. Este proceso se realizará **desde el mismo ordenador** en el que se encuentre dicho fichero de datos y por lo tanto no se mandará ninguna información a terceros.
+**ManageYourData** es una herramienta diseñada para analizar datasets de manera automática y generar **reportes detallados en formato PDF** con métricas clave con la finalidad de facilitar la comprensión del mismo. También se permite la conversación con un **asistente de IA** capaz de contestar preguntas sobre el dataset mediante la interfaz gráfica de Streamlit.
+
+Este proceso se realizará **desde el mismo ordenador** en el que se encuentre dicho fichero de datos y por lo tanto no se mandará ninguna información a terceros (exceptuando el uso opcional de la API de Google para la realización del análisis).
 
 ---
 
@@ -12,24 +14,19 @@
 
 ✅ **Exportación a otros formatos** como CSV o EXCEL.
 
+✅ **Chatbot** inteligente mediante Ollama (local) o Google Gemini (cloud).
+
 ✅ **Interfaz gráfica** para facilitar todos los procesos.
 
 ✅ **Paquete de Python** como método alternativo mediante terminal.
 
 ---
 
-### 📄 **Reportes generados con datasets de ejemplo.**
-
--  [**CarPrice**](https://github.com/MarkosHB/ManageYourData/blob/main/reports/carprice-report.pdf), una colección de aspectos relacionados con el proceso de venta de automóviles. 
--  [**Titanic**](https://github.com/MarkosHB/ManageYourData/blob/main/reports/titanic-report.pdf), con los detalles históricos del famoso transatlántico y su naufragio.
-
----
-
-### 🎯 **Métodos de empleo.**
-Actualmente existen dos alternativas para poder ejecutar **ManageYourData** en su dispositivo:
+### 🎯 **Modos de ejecución.**
+Actualmente existen dos alternativas para poner en funcionamiento **ManageYourData** en su dispositivo:
 
 > [!Note]
-> Visite [manageyourdata.streamlit.app](https://manageyourdata.streamlit.app/) para probar la herramienta sin necesidad de instalación previa.
+> Visite [manageyourdata.streamlit.app](https://manageyourdata.streamlit.app/) para visualizar la herramienta sin necesidad de instalación previa.
 > <div align="left">
 >    <img src="./images/app_preview.png" alt="ManageYourData Website Preview">
 > </div>
@@ -115,6 +112,7 @@ docker run --name ManageYourData -p 8501:8501 manage_your_data
 │   ├── 📝 data_manager.py    # Módulo con los métodos y funcionalidades.
 │   ├── 📝 pdf_generator.py   # Generador de reportes en PDF.
 │   ├── 📝 metrics.py         # Productor de información para el reporte.
+│   ├── 📝 models.py          # Generador de llms a partir de diferentes proveedores.
 │   ├── 📁 utils/             # Archivos de apoyo (estilos, constantes, etc).
 ├── 📝 frontend.py            # Interfaz gráfica en Streamlit.
 └── 📝 Dockerfile             # Contenedorizador de la aplicación.
@@ -122,20 +120,28 @@ docker run --name ManageYourData -p 8501:8501 manage_your_data
 ```
 
 > [!Important]
-> Para su correcto funcionamiento, deben existir las carpetas `images/` y `exports/` por motivos de diseño.\
-> No obstante, se recomienda tener creadas `data/` y  `reports/` para organizar los archivos empleados.
+> Se recomienda no modificar la estructura de carpetas para no interferir con el correcto funcionamiento del programa. No obstante, se anima al usuario a colocar y retirar los archivos de datos y generados que allí se encuentran.
 
 ---
 
 ### 🛠 **Tecnologías Utilizadas.**
 
-- **Python** 🐍
+- **Python** 🐍 (Lenguaje principal)
 - **Pandas** (Análisis de datos)
+- **Langchain** (Agentes de IA)
 - **FPDF** (Generación de PDFs)
 - **Matplotlib** (Visualización de datos)
 - **Streamlit** (Interfaz gráfica)
 
 ---
+
+### 📄 **Reportes generados con datasets de ejemplo.**
+
+-  [**CarPrice**](https://github.com/MarkosHB/ManageYourData/blob/main/reports/carprice-report.pdf), una colección de aspectos relacionados con el proceso de venta de automóviles. 
+-  [**Titanic**](https://github.com/MarkosHB/ManageYourData/blob/main/reports/titanic-report.pdf), con los detalles históricos del famoso transatlántico y su naufragio.
+
+---
+
 
 ### 🤝 **Contribuciones.**
 
@@ -145,4 +151,3 @@ docker run --name ManageYourData -p 8501:8501 manage_your_data
 2. Cree una **rama nueva** (`git checkout -b feature/nueva-funcionalidad`).
 3. Realice los cambios y **haga commit** (`git commit -m "Agregada nueva funcionalidad"`).
 4. **Haga un pull request** y se valorarán sus aportes.
-

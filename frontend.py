@@ -3,7 +3,7 @@ import json
 import streamlit as st
 from manageyourdata.data_manager import DataManager
 from manageyourdata.utils import constants
-from manageyourdata.models import create_llm_agent
+from manageyourdata.models import create_llm_agent, CONFIG_PROMT
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 
 
@@ -190,34 +190,44 @@ if file and provider:
 
         # Retrieve question from user.
         if prompt := st.chat_input("¿Qué quieres descubrir hoy sobre tus datos?", disabled=check_disabled):
+            
             # Save user prompt in memory.
             st.session_state[f"messages_{file}"].append({"role": "user", "content": prompt})
+            
+            with st.spinner("Analizando datos... :hourglass_flowing_sand:"):
+                try:
+                    # Create agent instance.
+                    llm = create_llm_agent(provider, model_selected, api_key)
+                    agent = create_pandas_dataframe_agent(llm, dm.data, verbose=True, allow_dangerous_code=True)
+                    # Generate response.
+                    config = [("system",CONFIG_PROMT,),("human", prompt),]
+                    response = agent.invoke(config)
 
-            llm = create_llm_agent(provider, model_selected, api_key)
-            # Create agent instance.
-            agent = create_pandas_dataframe_agent(llm, dm.data, verbose=True, allow_dangerous_code=True)
-            # Generate response.
-            response = agent.invoke(prompt)
-            # Save agent answer in memory.
-            st.session_state[f"messages_{file}"].append({"role": "assistant", "content": response["output"]})
-            # Refresh the chat messages display.
-            st.rerun()
+                    # Save agent answer in memory.
+                    st.session_state[f"messages_{file}"].append({"role": "assistant", "content": response["output"]})
+                
+                    # Refresh the chat messages display.
+                    st.rerun()
 
-        # Buttons to clear the chat or obtain the record.
+                except Exception as e:
+                    st.error(e)
+
+        # Utilities buttons.
         col1, col2 = st.columns(2)
 
         with col1:
-            if st.button("Borrar chat actual", icon="🗑️", use_container_width=True):
-                st.session_state.messages = []
-                st.rerun()
-    
-        with col2:
             # Allow user to obtain the record.
             btn = st.download_button(
                 label="Guardar conversación",
-                data=json.dumps(st.session_state.messages, indent=1),
+                data=json.dumps(st.session_state[f"messages_{file}"], indent=1),
                 file_name="conversacion.json",
                 mime="application/json",
                 icon="💾", 
                 use_container_width=True
             )
+
+        with col2:
+            # Allow user to clear the chat.
+            if st.button("Borrar chat actual", icon="🗑️", use_container_width=True):
+                st.session_state[f"messages_{file}"] = []
+                st.rerun()

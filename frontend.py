@@ -14,10 +14,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-
 #########################
 # Slider content display.
 #########################
@@ -25,7 +21,7 @@ if "messages" not in st.session_state:
 with st.sidebar:
     st.title("⚙️ Configuración")
 
-    # Get Google API key from user.
+    # Determine llm provider.
     provider = st.selectbox(
         label="Proveedor de LLM",
         options=constants.MODEL_PROVIDERS,
@@ -33,13 +29,23 @@ with st.sidebar:
 
     if provider == "Google":
         st.warning("Aviso: El análisis dejará de ser local", icon="⚠️")
+
+        # Obtain model name from user input.
+        model_selected = st.text_input(
+            label="Modelo elegido", 
+            help="Listado de modelos disponibles en https://ai.google.dev/gemini-api/docs/models",
+            value="gemini-2.5-flash",
+        )
+
         # Input for Google API key.
         api_key = st.text_input(
             label="Clave de la API de Google",
             type="password",
+            value=st.session_state.get("api_key", ""),
             help="Puede obtener su clave en https://aistudio.google.com/app/apikey"
         )
 
+        # Save api_key in memory.
         if api_key not in st.session_state:
             st.session_state.api_key = api_key
 
@@ -50,12 +56,36 @@ with st.sidebar:
 
     elif provider == "Ollama":
         api_key = None
-        st.text("Asegúrate de tener Ollama instalado y un modelo descargado.",
-                help="Más info en https://ollama.com/docs/installation")
+
+        # Obtain model name from user input.
+        model_selected = st.text_input(
+            label="Modelo elegido",
+            value="llama3.2",
+            help="Listado de modelos disponibles en https://ollama.com/search",
+        )
+
 
     st.divider()
 
     st.title("📋 Sistema de ficheros")
+
+    # Allow user data file to be inside /data folder.
+    uploaded_file = st.file_uploader(
+        label="Proporcione su fichero de datos o colóquelo en :blue[/data]",
+        type=constants.FORMAT.keys(),
+    )
+
+    if uploaded_file is not None:
+        # Get the new file name.
+        file_name = uploaded_file.name
+        # Create the full path to save the file.
+        save_path = os.path.join("./data", file_name)
+
+        # Open the file and write the content.
+        with open(save_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+
+
     st.subheader("Contenido de la carpeta :blue[/data]")
     st.write(os.listdir("./data"))
     st.subheader("Contenido de la carpeta :blue[/reports]")
@@ -91,7 +121,6 @@ with col1:
         placeholder="Sin opción elegida",
         options=os.listdir("./data"),
         index=None,
-        on_change=st.session_state.messages.clear,
     )
 
     if file:
@@ -122,7 +151,6 @@ with col2:
             st.rerun()
             st.toast("Fichero de datos convertido correctamente", icon="✅")
 
-st.divider()
 
 #######################
 # Tabs content display.
@@ -130,8 +158,7 @@ st.divider()
 
 if file and provider:
     # Create tabs to display PDF report and ask questions.
-    tab1, tab2, tab3 = st.tabs(
-        ["Visualizar reporte PDF", "Conversar con los datos", "Historial de conversación"])
+    tab1, tab2 = st.tabs(["Visualizar reporte PDF", "Conversar con los datos"])
 
     with tab1:
         # Display PDF download button and report.
@@ -148,36 +175,49 @@ if file and provider:
         else:
             st.info("Genere primero el reporte PDF para visualizarlo aquí.")
 
-    with tab2:  
-        # Make sure there's an api key when needed.
-        check_disabled = provider != constants.MODEL_PROVIDERS[0] and not api_key
-        
-        # Retrieve question from user.
-        st.container()
-        if prompt := st.chat_input("¿Qué quieres descubrir hoy?", disabled=check_disabled):
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            
-            with st.chat_message("user"):
-                st.markdown(prompt)
+    with tab2:
+        # Create a message record. 
+        if f"messages_{file}" not in st.session_state:
+            st.session_state[f"messages_{file}"] = []
 
-            with st.chat_message("assistant"):
-                llm = create_llm_agent(provider, api_key)
-                # Create agent instance.
-                agent = create_pandas_dataframe_agent(llm, dm.data, verbose=True, allow_dangerous_code=True)
-                # Generate response.
-                response = agent.invoke(prompt)
-                st.markdown(response["output"])
-            st.session_state.messages.append({"role": "assistant", "content": response["output"]})
-
-        btn = st.download_button(
-                    label="Guardar conversación",
-                    data=json.dumps(st.session_state.messages),
-                    file_name="conversacion.json",
-                    mime="application/json",
-                    icon="💾", 
-                )
-        
-    with tab3:
-        for message in st.session_state.messages:
+        # Display the chat messages from history on app rerun.
+        for message in st.session_state[f"messages_{file}"]:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
+        
+        # Make sure there's an api key when needed.
+        check_disabled = provider != constants.MODEL_PROVIDERS[0] and not api_key
+
+        # Retrieve question from user.
+        if prompt := st.chat_input("¿Qué quieres descubrir hoy sobre tus datos?", disabled=check_disabled):
+            # Save user prompt in memory.
+            st.session_state[f"messages_{file}"].append({"role": "user", "content": prompt})
+
+            llm = create_llm_agent(provider, model_selected, api_key)
+            # Create agent instance.
+            agent = create_pandas_dataframe_agent(llm, dm.data, verbose=True, allow_dangerous_code=True)
+            # Generate response.
+            response = agent.invoke(prompt)
+            # Save agent answer in memory.
+            st.session_state[f"messages_{file}"].append({"role": "assistant", "content": response["output"]})
+            # Refresh the chat messages display.
+            st.rerun()
+
+        # Buttons to clear the chat or obtain the record.
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("Borrar chat actual", icon="🗑️", use_container_width=True):
+                st.session_state.messages = []
+                st.rerun()
+    
+        with col2:
+            # Allow user to obtain the record.
+            btn = st.download_button(
+                label="Guardar conversación",
+                data=json.dumps(st.session_state.messages, indent=1),
+                file_name="conversacion.json",
+                mime="application/json",
+                icon="💾", 
+                use_container_width=True
+            )

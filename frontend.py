@@ -1,8 +1,9 @@
 import os
+import json
 import streamlit as st
 from manageyourdata.data_manager import DataManager
 from manageyourdata.utils import constants
-from manageyourdata.models import create_llm_agent, get_frontend_info
+from manageyourdata.models import create_llm_agent
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 
 
@@ -12,6 +13,10 @@ st.set_page_config(
     page_icon=":bar_chart:",
     initial_sidebar_state="expanded"
 )
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
 
 #########################
 # Slider content display.
@@ -34,6 +39,9 @@ with st.sidebar:
             type="password",
             help="Puede obtener su clave en https://aistudio.google.com/app/apikey"
         )
+
+        if api_key not in st.session_state:
+            st.session_state.api_key = api_key
 
         # Option to set API key as environment variable.
         set_env = st.checkbox("Establecer como variable de entorno", value=True)
@@ -68,6 +76,7 @@ with st.sidebar:
 
 st.title(":wave: Bienvenido a :blue[ManageYourData]")
 st.subheader("Gestiona y analiza tus datos en local de forma sencilla.")
+st.divider()
 
 
 # Basic operations.
@@ -82,6 +91,7 @@ with col1:
         placeholder="Sin opción elegida",
         options=os.listdir("./data"),
         index=None,
+        on_change=st.session_state.messages.clear,
     )
 
     if file:
@@ -120,11 +130,13 @@ st.divider()
 
 if file and provider:
     # Create tabs to display PDF report and ask questions.
-    tab1, tab2 = st.tabs(["Visualizar reporte PDF", "Conversar con los datos",])
+    tab1, tab2, tab3 = st.tabs(
+        ["Visualizar reporte PDF", "Conversar con los datos", "Historial de conversación"])
 
     with tab1:
         # Display PDF download button and report.
         if os.path.exists(report_path):
+            st.pdf(report_path, height=850)
             with open(report_path, "rb") as file:
                 btn = st.download_button(
                     label="Descárguelo pulsando aquí",
@@ -133,28 +145,39 @@ if file and provider:
                     mime="application/pdf",
                     icon="📥", 
                 )
-            st.pdf(report_path, height=850)
         else:
             st.info("Genere primero el reporte PDF para visualizarlo aquí.")
 
     with tab2:  
-        # Get question from user.
-        user_question = st.text_input(
-            label="Escriba su pregunta sobre el conjunto de datos seleccionado.",
-            placeholder="Ej: ¿Cuántos valores nulos existen en mis datos?"
-        )
-
         # Make sure there's an api key when needed.
-        button_disabled = (provider != constants.MODEL_PROVIDERS[0] and not api_key)
-        # Obtain button configuration details.
-        config = get_frontend_info(provider)
+        check_disabled = provider != constants.MODEL_PROVIDERS[0] and not api_key
+        
+        # Retrieve question from user.
+        st.container()
+        if prompt := st.chat_input("¿Qué quieres descubrir hoy?", disabled=check_disabled):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            
+            with st.chat_message("user"):
+                st.markdown(prompt)
 
-        if st.button(label=config["label"], icon=config["icon"], help=config["help"], disabled=button_disabled):
-            # Create the llm instance.
-            llm = create_llm_agent(provider, api_key)
-            # Create agent instance.
-            agent = create_pandas_dataframe_agent(llm, dm.data, verbose=True, allow_dangerous_code=True)
-            # Generate response.
-            response = agent.invoke(user_question)
-            # Display response.
-            st.write(response)
+            with st.chat_message("assistant"):
+                llm = create_llm_agent(provider, api_key)
+                # Create agent instance.
+                agent = create_pandas_dataframe_agent(llm, dm.data, verbose=True, allow_dangerous_code=True)
+                # Generate response.
+                response = agent.invoke(prompt)
+                st.markdown(response["output"])
+            st.session_state.messages.append({"role": "assistant", "content": response["output"]})
+
+        btn = st.download_button(
+                    label="Guardar conversación",
+                    data=json.dumps(st.session_state.messages),
+                    file_name="conversacion.json",
+                    mime="application/json",
+                    icon="💾", 
+                )
+        
+    with tab3:
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])

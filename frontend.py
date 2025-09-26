@@ -133,7 +133,7 @@ with col1:
         report_path = f"reports/{st.session_state.data_managers[file].file_name}-report.pdf"
 
         # Display button to generate report.
-        if st.button(label="Generar reporte PDF", icon="🛠️"):
+        if st.button(label="Generar reporte PDF", icon="🛠️", use_container_width=True):
             st.session_state.data_managers[file].report_pdf(report_path)
             st.rerun()
             st.toast("Reporte PDF generado correctamente", icon="✅")
@@ -150,7 +150,7 @@ with col2:
 
     if opt and file:
         # Display button to export data.
-        if st.button(label="Convertir fichero de datos", icon="🛠️"):
+        if st.button(label="Convertir fichero de datos", icon="🛠️", use_container_width=True):
             st.session_state.data_managers[file].export_data(opt)
             st.rerun()
             st.toast("Fichero de datos convertido correctamente", icon="✅")

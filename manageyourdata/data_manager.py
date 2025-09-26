@@ -134,4 +134,13 @@ class DataManager:
     def delete_historic(self):
         """Function to delete the message history."""
         self.msgs_history = []
+
+
+    def get_historic(self) -> list[HumanMessage | AIMessage]:
+        """Function to get the message history.
+
+        Returns:
+            list[HumanMessage | AIMessage]: The message history.
+        """
+        return self.msgs_history
     

@@ -3,8 +3,6 @@ import json
 import streamlit as st
 from manageyourdata.data_manager import DataManager
 from manageyourdata.utils import constants
-from manageyourdata.models import create_llm_agent, CONFIG_PROMT
-from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 
 
 # Configure the page.
@@ -13,6 +11,11 @@ st.set_page_config(
     page_icon=":bar_chart:",
     initial_sidebar_state="expanded"
 )
+
+# Initialize session state for data managers.
+if "data_managers" not in st.session_state:
+    st.session_state.data_managers = {}
+
 
 #########################
 # Slider content display.
@@ -86,6 +89,7 @@ with st.sidebar:
             f.write(uploaded_file.getbuffer())
 
 
+    # Display contents of folders.
     st.subheader("Contenido de la carpeta :blue[/data]")
     st.write(os.listdir("./data"))
     st.subheader("Contenido de la carpeta :blue[/reports]")
@@ -109,10 +113,7 @@ st.subheader("Gestiona y analiza tus datos en local de forma sencilla.")
 st.divider()
 
 
-# Basic operations.
-dm = DataManager()
 col1, col2 = st.columns(2)
-
 with col1:
     # Select datafile to load.
     file = st.selectbox(
@@ -124,13 +125,16 @@ with col1:
     )
 
     if file:
+        if file not in st.session_state.data_managers:
+            st.session_state.data_managers[file] = DataManager()
+
         # Parse data input.
-        dm.load_data(f"data/{file}")
-        report_path = f"reports/{dm.file_name}-report.pdf"
+        st.session_state.data_managers[file].load_data(f"data/{file}")
+        report_path = f"reports/{st.session_state.data_managers[file].file_name}-report.pdf"
 
         # Display button to generate report.
         if st.button(label="Generar reporte PDF", icon="🛠️"):
-            dm.report_pdf(report_path)
+            st.session_state.data_managers[file].report_pdf(report_path)
             st.rerun()
             st.toast("Reporte PDF generado correctamente", icon="✅")
 
@@ -147,7 +151,7 @@ with col2:
     if opt and file:
         # Display button to export data.
         if st.button(label="Convertir fichero de datos", icon="🛠️"):
-            dm.export_data(opt)
+            st.session_state.data_managers[file].export_data(opt)
             st.rerun()
             st.toast("Fichero de datos convertido correctamente", icon="✅")
 
@@ -158,55 +162,29 @@ with col2:
 
 if file and provider:
     # Create tabs to display PDF report and ask questions.
-    tab1, tab2 = st.tabs(["Visualizar reporte PDF", "Conversar con los datos"])
+    tab1, tab2 = st.tabs(["Conversar con los datos", "Visualizar reporte PDF"])
 
     with tab1:
-        # Display PDF download button and report.
-        if os.path.exists(report_path):
-            st.pdf(report_path, height=850)
-            with open(report_path, "rb") as file:
-                btn = st.download_button(
-                    label="Descárguelo pulsando aquí",
-                    data=file,
-                    file_name="report.pdf",
-                    mime="application/pdf",
-                    icon="📥", 
-                )
-        else:
-            st.info("Genere primero el reporte PDF para visualizarlo aquí.")
-
-    with tab2:
-        # Create a message record. 
-        if f"messages_{file}" not in st.session_state:
-            st.session_state[f"messages_{file}"] = []
-
         # Display the chat messages from history on app rerun.
-        for message in st.session_state[f"messages_{file}"]:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+        for message in st.session_state.data_managers[file].get_historic():
+            with st.chat_message(message.type):
+                st.markdown(message.content)
         
         # Make sure there's an api key when needed.
         check_disabled = provider != constants.MODEL_PROVIDERS[0] and not api_key
+        if not check_disabled:
+            # Determine the assistant to use.
+            st.session_state.data_managers[file].create_assistant(provider, model_selected, api_key)
 
         # Retrieve question from user.
         if prompt := st.chat_input("¿Qué quieres descubrir hoy sobre tus datos?", disabled=check_disabled):
             
-            # Save user prompt in memory.
-            st.session_state[f"messages_{file}"].append({"role": "user", "content": prompt})
-            
-            with st.spinner("Analizando datos... :hourglass_flowing_sand:"):
+            with st.spinner("Analizando datos..."):
                 try:
-                    # Create agent instance.
-                    llm = create_llm_agent(provider, model_selected, api_key)
-                    agent = create_pandas_dataframe_agent(llm, dm.data, verbose=True, allow_dangerous_code=True)
-                    # Generate response.
-                    config = [("system",CONFIG_PROMT,),("human", prompt),("chat_history", st.session_state[f"messages_{file}"]),]
-                    response = agent.invoke(config)
-
-                    # Save agent answer in memory.
-                    st.session_state[f"messages_{file}"].append({"role": "assistant", "content": response["output"]})
+                    # Ask the assistant.
+                    _ = st.session_state.data_managers[file].chat_with_assistant(prompt)
                 
-                    # Refresh the chat messages display.
+                    # Refresh chat messages display.
                     st.rerun()
 
                 except Exception as e:
@@ -216,10 +194,15 @@ if file and provider:
         col1, col2 = st.columns(2)
 
         with col1:
+            # Parse historic to be JSON serializable.
+            serializable_history = [
+                {"type": msg.type, "content": msg.content} 
+                for msg in st.session_state.data_managers[file].get_historic()
+            ]
             # Allow user to obtain the record.
             btn = st.download_button(
                 label="Guardar conversación",
-                data=json.dumps(st.session_state[f"messages_{file}"], indent=1),
+                data=json.dumps(serializable_history, indent=1, ensure_ascii=False),
                 file_name="conversacion.json",
                 mime="application/json",
                 icon="💾", 
@@ -229,5 +212,21 @@ if file and provider:
         with col2:
             # Allow user to clear the chat.
             if st.button("Borrar chat actual", icon="🗑️", use_container_width=True):
-                st.session_state[f"messages_{file}"] = []
+                st.session_state.data_managers[file].delete_historic()
+                # Banish conversation from screen. 
                 st.rerun()
+    
+    with tab2:
+        # Display PDF download button and report.
+        if os.path.exists(report_path):
+            st.pdf(report_path, height=850)
+            with open(report_path, "rb") as pdf:
+                btn = st.download_button(
+                    label="Descárguelo pulsando aquí",
+                    data=pdf,
+                    file_name="report.pdf",
+                    mime="application/pdf",
+                    icon="📥", 
+                )
+        else:
+            st.info("Genere primero el reporte PDF para visualizarlo aquí.")

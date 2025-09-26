@@ -1,10 +1,10 @@
 import pandas as pd
-from manageyourdata.utils import constants
 from langchain_ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 from langchain.agents import AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from manageyourdata.utils import constants
 
 
 def create_llm_agent(provider: str, model_selected: str, api_key: str = None) -> ChatOllama | ChatGoogleGenerativeAI:
@@ -24,22 +24,20 @@ def create_llm_agent(provider: str, model_selected: str, api_key: str = None) ->
 
     llm = None
 
-    # "Ollama"
-    if provider == constants.MODEL_PROVIDERS[0]:
-        try:
+    try:
+        # "Ollama"
+        if provider == constants.MODEL_PROVIDERS[0]:
             llm = ChatOllama(model=model_selected)
-        except Exception:
-            raise ValueError(f"Error al iniciar Ollama. Compruebe que la configuración sea correcta.")
 
-    # "Google"
-    elif provider == constants.MODEL_PROVIDERS[1]:
-        try:
+        # "Google"
+        elif provider == constants.MODEL_PROVIDERS[1]:
             llm = ChatGoogleGenerativeAI(model=model_selected, google_api_key=api_key)
-        except Exception:
-            raise ValueError(f"Error al iniciar google Gemini. Compruebe que la configuración sea correcta.")
 
-    else:
-        raise ValueError(f"Unsupported LLM provider. Supported providers: {constants.MODEL_PROVIDERS}")
+        else:
+            raise ValueError(f"Unsupported LLM provider. Supported providers: {constants.MODEL_PROVIDERS}")
+
+    except Exception:
+        raise ValueError(f"LLM could not be initialized. Check the configuration information provided.")
 
     return llm
 

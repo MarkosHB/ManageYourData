@@ -1,6 +1,8 @@
 import os
+import getpass
 import argparse
 from manageyourdata.utils import constants
+from manageyourdata.utils import styles
 from manageyourdata.data_manager import DataManager
 
 
@@ -45,19 +47,19 @@ def main():
             dm.export_data(args.export)
 
         if args.chat:
+            # Ask for LLM configuration data.
             provider = input("Insert your desired AI provider: ").strip()
             model = input("Insert the actual name of the model: ").strip()
-            api_key = input("Insert your API key (if needed, else press enter): ").strip() or None
+            api_key = getpass.getpass("Insert your API key if needed (Press enter to skip): ").strip() or None
 
+            # Create the AI agent.
             dm.create_assistant(provider, model, api_key)
+
             while True:
-                prompt = input("You: ").strip()
-                if prompt.lower() in ["exit", "quit", "q"]:
-                    print("Exiting the chat. Goodbye!")
-                    break
+                prompt = input(f"\n {styles.ChatColors.USER.value}> You: {styles.ChatColors.RESET_COLOR.value}").strip()
                 try:
                     response = dm.chat_with_assistant(prompt)
-                    print(f"AI: {response}")
+                    print(f"\n {styles.ChatColors.AI.value}> AI: {response} {styles.ChatColors.RESET_COLOR.value}")
                 except Exception as e:
                     print(f"Error: {e}")
 

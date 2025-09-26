@@ -1,6 +1,6 @@
-# Generador Automático de Reportes PDF 🚀 [ManageYourData](https://github.com/MarkosHB/ManageYourData)
+# Saca partido a tus datos conociéndolos en profundidad con [ManageYourData](https://github.com/MarkosHB/ManageYourData) 📊
 
-**ManageYourData** es una herramienta diseñada para analizar datasets de manera automática y generar **reportes detallados en formato PDF** con métricas clave con la finalidad de facilitar la comprensión del mismo. También se permite la conversación con un **asistente de IA** capaz de contestar preguntas sobre el dataset mediante la interfaz gráfica de Streamlit.
+**ManageYourData** es una herramienta diseñada para analizar datasets de manera automática y generar **reportes detallados en formato PDF** con métricas clave con la finalidad de facilitar la comprensión del mismo. También se permite la conversación con un **asistente de IA** capaz de contestar preguntas sobre el dataset mediante la interfaz gráfica de Streamlit, la terminal de comandos o la API de FastAPI.
 
 Este proceso se realizará **desde el mismo ordenador** en el que se encuentre dicho fichero de datos y por lo tanto no se mandará ninguna información a terceros (exceptuando el uso opcional de la API de Google para la realización del análisis).
 
@@ -17,6 +17,8 @@ Este proceso se realizará **desde el mismo ordenador** en el que se encuentre d
 ✅ **Chatbot** inteligente mediante Ollama (local) o Google Gemini (cloud).
 
 ✅ **Interfaz gráfica** para facilitar todos los procesos.
+
+✅ **API REST (FastAPI)** para acceso programático.
 
 ✅ **Paquete de Python** como método alternativo mediante terminal.
 
@@ -58,9 +60,16 @@ pip install .
 
 Finalmente, usted podrá elegir una de las siguientes opciones:
 #### A) 🔺Interactuar mediante consola con la herramienta.
+- Creación de reportes e informes PDF. 
 ```bash
 manageyourdata -f data/titanic.csv -r reports/titanic-report.pdf -e excel
 ```
+- Chat inteligente con asistente analizador de datasets.
+    - Una vez activado, se pedirá introducir datos concretos del modelo.
+```bash
+manageyourdata -f data/titanic.csv -c
+```
+
 
 #### B) 🔺Utilizar la interfaz gráfica para evitar escribir comandos.
 ```bash
@@ -120,7 +129,7 @@ docker run --name ManageYourData -p 8501:8501 manage_your_data
 ```
 
 > [!Important]
-> Se recomienda no modificar la estructura de carpetas para no interferir con el correcto funcionamiento del programa. No obstante, se anima al usuario a colocar y retirar los archivos de datos y generados que allí se encuentran.
+> Se recomienda no modificar la estructura de carpetas para no interferir con el correcto funcionamiento del programa. No obstante, se anima al usuario a colocar y retirar los archivos de datos y generados (reportes y exportaciones) que allí se encuentran.
 
 ---
 

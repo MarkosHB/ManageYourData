@@ -62,3 +62,27 @@ def export_data(format: str):
         return {"message": f"Datos exportados correctamente en {export_path}."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/create-assistant/")
+def create_assistant(provider: str, model: str, api_key: str = None):
+    """Crea un asistente de IA para interactuar con los datos cargados."""
+    try:
+        if not dm.file_name:
+            raise HTTPException(status_code=400, detail="No se ha cargado ningún archivo.")
+        dm.create_assistant(provider, model, api_key)
+        return {"message": "Asistente de IA creado correctamente."}
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.post("/chat_with_assistant/")
+def chat_with_assistant(prompt: str):
+    """Interactúa con el asistente de IA utilizando el prompt proporcionado."""
+    try:
+        if not dm.agent:
+            raise HTTPException(status_code=400, detail="No se ha creado ningún asistente de IA.")
+        response = dm.chat_with_assistant(prompt)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

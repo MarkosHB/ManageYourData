@@ -200,7 +200,7 @@ if file and provider:
                     llm = create_llm_agent(provider, model_selected, api_key)
                     agent = create_pandas_dataframe_agent(llm, dm.data, verbose=True, allow_dangerous_code=True)
                     # Generate response.
-                    config = [("system",CONFIG_PROMT,),("human", prompt),]
+                    config = [("system",CONFIG_PROMT,),("human", prompt),("chat_history", st.session_state[f"messages_{file}"]),]
                     response = agent.invoke(config)
 
                     # Save agent answer in memory.

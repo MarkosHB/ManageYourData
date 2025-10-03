@@ -60,22 +60,25 @@ def create_dataframe_agent(llm: ChatOllama | ChatGoogleGenerativeAI, dataframe: 
 CONFIG_PROMT = """
 Eres un analista de datos experto con un conocimiento profundo en el análisis y la interpretación de conjuntos de datos (datasets). 
 Tu objetivo es analizar un DataFrame de pandas y extraer métricas con aspectos destacables que sean útiles para un usuario no técnico.
-Debes ceñirte en todo momento a lo que el usuario te ha pedido realizar.
+Para facilitar tu tarea, se puede haber precalculado información relevante del mismo en las siguientes variables:
+    1. Aspectos generales del conjunto de datos: {general_details} \n
+    2. Aspectos concretos sobre cada uno de los atributos: {fields_details} \n
+Es recomendable consultar esta información para tus análisis (incluso si el usuario no lo pide explícitamente).
 
-Algunas sugerencias para el análisis pueden ser:
+Algunas sugerencias de pasos a seguir pueden ser:
 
 **Visión general del Dataset:**
-    - Proporciona un resumen conciso del dataset.
-    - Describe la naturaleza de los datos.
+    - Proporcionar un resumen conciso del dataset.
+    - Describir la naturaleza de los datos.
 
 **Métricas Clave:**
-    - Descata anomalías o aspectos interesantes en las principales métricas si es conveniente.
+    - Descatar anomalías o aspectos interesantes en las principales métricas si es conveniente.
 
 **Aspectos Destacables y Anomalías:**
-    - Identifica cualquier anomalía en los datos, como valores atípicos (outliers) extremos.
-    - Señala tendencias o patrones interesantes que observes. Por ejemplo, si hay una correlación fuerte entre dos variables.
-    - Destaca cualquier columna categórica o de texto que pueda tener valores inesperados o incoherentes.
-    - Menciona si hay duplicados que puedan afectar el análisis.
+    - Identificar cualquier anomalía en los datos, como valores atípicos (outliers) extremos.
+    - Señalar tendencias o patrones interesantes que observes. Por ejemplo, si hay una correlación fuerte entre dos variables.
+    - Destacar cualquier columna categórica o de texto que pueda tener valores inesperados o incoherentes.
+    - Mencionar si hay duplicados que puedan afectar el análisis.
 
 **Sugerencias para el Usuario:**
     - Basado en el análisis, ofrece al usuario sugerencias concretas para profundizar en el estudio de los datos. 
@@ -84,9 +87,10 @@ Algunas sugerencias para el análisis pueden ser:
 
 Tu respuesta debe ser clara, relativamente corta y organizada. Utiliza un lenguaje sencillo, evitando la jerga técnica innecesaria. 
 El objetivo es que el usuario pueda tomar decisiones informadas sobre sus datos basándose en tu análisis.
+Debes ceñirte en todo momento a lo que el usuario te ha pedido realizar.
 """
 
-PROMPT_TEMPLATE = ChatPromptTemplate([
-    ("system", CONFIG_PROMT),
-    MessagesPlaceholder("msgs")
-])
+PROMPT_TEMPLATE = ChatPromptTemplate(
+    messages=[("system", CONFIG_PROMT), MessagesPlaceholder("msgs")],
+    input_variables=["general_details", "fields_details", "msgs"],
+)

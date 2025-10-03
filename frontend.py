@@ -16,6 +16,23 @@ st.set_page_config(
 if "data_managers" not in st.session_state:
     st.session_state.data_managers = {}
 
+# Save api_key in memory.
+if "google_api_key" not in st.session_state:
+    st.session_state.google_api_key = None
+
+# PDF preview function inside dialog. 
+@st.dialog(f"Vista previa del documento.", width="medium")
+def visualize_pdf():
+    with open(report_path, "rb") as pdf:
+        st.download_button(
+            label="Descárguelo pulsando aquí",
+            data=pdf,
+            file_name="report.pdf",
+            mime="application/pdf",
+            icon="📥", 
+        )
+    st.pdf(report_path, height=850)
+
 
 #########################
 # Slider content display.
@@ -31,7 +48,7 @@ with st.sidebar:
     )
 
     if provider == "Google":
-        st.warning("Aviso: El análisis dejará de ser local", icon="⚠️")
+        st.warning("Aviso: El análisis dejará de ser local.", icon="⚠️")
 
         # Obtain model name from user input.
         model_selected = st.text_input(
@@ -41,25 +58,19 @@ with st.sidebar:
         )
 
         # Input for Google API key.
-        api_key = st.text_input(
+        st.session_state.google_api_key = st.text_input(
             label="Clave de la API de Google",
             type="password",
-            value=st.session_state.get("api_key", ""),
+            value=st.session_state.get("google_api_key", ""),
             help="Puede obtener su clave en https://aistudio.google.com/app/apikey"
         )
 
-        # Save api_key in memory.
-        if api_key not in st.session_state:
-            st.session_state.api_key = api_key
-
-        # Option to set API key as environment variable.
-        set_env = st.checkbox("Establecer como variable de entorno", value=True)
-        if set_env:
-            os.environ["GOOGLE_API_KEY"] = api_key
+        # Save API key as environment variable.
+        set_env = st.checkbox("Establecer como variable de entorno", value=False)
+        if set_env and st.session_state.google_api_key:
+            os.environ["GOOGLE_API_KEY"] = st.session_state.google_api_key
 
     elif provider == "Ollama":
-        api_key = None
-
         # Obtain model name from user input.
         model_selected = st.text_input(
             label="Modelo elegido",
@@ -67,9 +78,7 @@ with st.sidebar:
             help="Listado de modelos disponibles en https://ollama.com/search",
         )
 
-
     st.divider()
-
     st.title("📋 Sistema de ficheros")
 
     # Allow user data file to be inside /data folder.
@@ -97,8 +106,8 @@ with st.sidebar:
     st.subheader("Contenido de la carpeta :blue[/exports]")
     st.write(os.listdir("./exports"))
 
+    # References.
     st.divider()
-
     st.title("📚 Referencias")
     st.link_button(label="Repositorio de Github", url=f"{constants.GITHUB_URL}", icon="🔗")
     st.image("./manageyourdata/utils/image.jpg")
@@ -112,69 +121,81 @@ st.title(":wave: Bienvenido a :blue[ManageYourData]")
 st.subheader("Gestiona y analiza tus datos en local de forma sencilla.")
 st.divider()
 
+with st.expander(label="Funcionalidades básicas", expanded=True):
 
-col1, col2 = st.columns(2)
-with col1:
-    # Select datafile to load.
-    file = st.selectbox(
-        label="Seleccione un archivo de datos.",
-        help="Los archivos listados se encuentran en el directorio :blue[/data]",
-        placeholder="Sin opción elegida",
-        options=os.listdir("./data"),
-        index=None,
-    )
+    col1, col2 = st.columns(2)
+    with col1:
+        # Select datafile to load.
+        file = st.selectbox(
+            label="Seleccione un archivo de datos.",
+            help="Los archivos listados se encuentran en el directorio :blue[/data]",
+            placeholder="Sin opción elegida",
+            options=os.listdir("./data"),
+            index=None,
+        )
 
-    if file:
-        if file not in st.session_state.data_managers:
-            st.session_state.data_managers[file] = DataManager()
+        if file:
+            if file not in st.session_state.data_managers:
+                st.session_state.data_managers[file] = DataManager()
 
-        # Parse data input.
-        st.session_state.data_managers[file].load_data(f"data/{file}")
-        report_path = f"reports/{st.session_state.data_managers[file].file_name}-report.pdf"
+            # Parse data input.
+            st.session_state.data_managers[file].load_data(f"data/{file}")
+            report_path = f"reports/{st.session_state.data_managers[file].file_name}-report.pdf"
 
-        # Display button to generate report.
-        if st.button(label="Generar reporte PDF", icon="🛠️", use_container_width=True):
-            st.session_state.data_managers[file].report_pdf(report_path)
-            st.rerun()
-            st.toast("Reporte PDF generado correctamente", icon="✅")
+            # Display button to generate report.
+            if st.button(label="Generar reporte PDF", icon="🛠️", use_container_width=True):
+                st.session_state.data_managers[file].report_pdf(report_path)
+                st.rerun()
+                st.toast("Reporte PDF generado correctamente", icon="✅")
 
-with col2:
-    # Select format to export data.
-    opt = st.selectbox(
-        label="Seleccione un formato para exportar.",
-        help="Debe de haber elegido un archivo de datos previamente",
-        placeholder="Sin opción elegida",
-        options=list(constants.FORMAT.keys()),
-        index=None,
-    )
+    with col2:
+        # Select format to export data.
+        opt = st.selectbox(
+            label="Seleccione un formato para exportar.",
+            help="Debe de haber elegido un archivo de datos previamente",
+            placeholder="Sin opción elegida",
+            options=list(constants.FORMAT.keys()),
+            index=None,
+        )
 
-    if opt and file:
-        # Display button to export data.
-        if st.button(label="Convertir fichero de datos", icon="🛠️", use_container_width=True):
-            st.session_state.data_managers[file].export_data(opt)
-            st.rerun()
-            st.toast("Fichero de datos convertido correctamente", icon="✅")
+        if opt and file:
+            # Display button to export data.
+            if st.button(label="Convertir fichero de datos", icon="🛠️", use_container_width=True):
+                st.session_state.data_managers[file].export_data(opt)
+                st.rerun()
+                st.toast("Fichero de datos convertido correctamente", icon="✅")
+
+    if file: 
+        st.success("Consejo: Genere el reporte para mejorar el rendimiento y resultados del asistente.", icon="📗")
+
+        # Display PDF download button and report.
+        if os.path.exists(report_path):       
+            if st.button("Pulse aquí para mostrar en el navegador el reporte generado", use_container_width=True, icon="👀"):
+                visualize_pdf()
+
+        else:
+            st.info("Información: Obtenga primero el reporte PDF para visualizarlo desde el nabegador aquí.", icon="🔵")
 
 
-#######################
-# Tabs content display.
-#######################
+#########################
+# Assistant chat display.
+#########################
 
-if file and provider:
-    # Create tabs to display PDF report and ask questions.
-    tab1, tab2 = st.tabs(["Conversar con los datos", "Visualizar reporte PDF"])
+with st.expander(label="Conversar con los datos", expanded=True):
 
-    with tab1:
+    if file and provider:
         # Display the chat messages from history on app rerun.
         for message in st.session_state.data_managers[file].get_historic():
             with st.chat_message(message.type):
                 st.markdown(message.content)
         
         # Make sure there's an api key when needed.
-        check_disabled = provider != constants.MODEL_PROVIDERS[0] and not api_key
+        check_disabled = provider != constants.MODEL_PROVIDERS[0] and not st.session_state.google_api_key
         if not check_disabled:
             # Determine the assistant to use.
-            st.session_state.data_managers[file].create_assistant(provider, model_selected, api_key)
+            st.session_state.data_managers[file].create_assistant(provider, model_selected, st.session_state.google_api_key)
+        else:
+            st.error("Error: Usted debe proporcionar una API KEY para utilizar este servicio.", icon="❌")
 
         # Retrieve question from user.
         if prompt := st.chat_input("¿Qué quieres descubrir hoy sobre tus datos?", disabled=check_disabled):
@@ -192,7 +213,6 @@ if file and provider:
 
         # Utilities buttons.
         col1, col2 = st.columns(2)
-
         with col1:
             # Parse historic to be JSON serializable.
             serializable_history = [
@@ -206,27 +226,14 @@ if file and provider:
                 file_name="conversacion.json",
                 mime="application/json",
                 icon="💾", 
-                use_container_width=True
+                use_container_width=True,
             )
-
         with col2:
             # Allow user to clear the chat.
             if st.button("Borrar chat actual", icon="🗑️", use_container_width=True):
                 st.session_state.data_managers[file].delete_historic()
                 # Banish conversation from screen. 
                 st.rerun()
-    
-    with tab2:
-        # Display PDF download button and report.
-        if os.path.exists(report_path):
-            st.pdf(report_path, height=850)
-            with open(report_path, "rb") as pdf:
-                btn = st.download_button(
-                    label="Descárguelo pulsando aquí",
-                    data=pdf,
-                    file_name="report.pdf",
-                    mime="application/pdf",
-                    icon="📥", 
-                )
-        else:
-            st.info("Genere primero el reporte PDF para visualizarlo aquí.")
+
+    else:
+        st.info("Información: Primero debe haber seleccionado un archivo de datos.", icon="⬆️")

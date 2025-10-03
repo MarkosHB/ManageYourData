@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from manageyourdata.utils import constants
 
 
-def general_details(df: pd.DataFrame, file_name: str) -> dict:
+def general_details(df: pd.DataFrame, file_name: str, make_plots: bool = True) -> dict:
     """Principales características del conjuto de los datos."""
     metrics = {}  # Dictionary to store dataframe general metrics.
 
@@ -21,16 +21,17 @@ def general_details(df: pd.DataFrame, file_name: str) -> dict:
     metrics["Valores nulos"] = f"{(total_nulls / df.size) * 100:.2f}% ({str(total_nulls)})"
     metrics["Filas duplicadas"] = f"{(duplicated / df.size) * 100:.2f}% ({str(duplicated)})"
 
-    # Generate associated plots.
-    os.makedirs(f"images/{file_name}", exist_ok=True)
-    save_field_types(df, f"images/{file_name}/field_types.png")
-    save_nulls_distribution(nulls, f"images/{file_name}/nulls_distribution.png")
-    save_correlation_heatmap(df, f"images/{file_name}/correlation_heatmap.png")
+    if make_plots:
+        # Generate associated plots.
+        os.makedirs(f"images/{file_name}", exist_ok=True)
+        save_field_types(df, f"images/{file_name}/field_types.png")
+        save_nulls_distribution(nulls, f"images/{file_name}/nulls_distribution.png")
+        save_correlation_heatmap(df, f"images/{file_name}/correlation_heatmap.png")
 
     return metrics
 
 
-def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
+def fields_details(df: pd.DataFrame, file_name: str, make_plots: bool = True) -> list[dict]:
     """Principales características de la columna en particular."""
     fields = list(dict())  # List of dicctionaries to store fields details.
 
@@ -80,10 +81,11 @@ def fields_details(df: pd.DataFrame, file_name: str) -> list[dict]:
         # Finish packaging information.
         fields.append(field_details)
 
-        # Create plots for each field.
-        for graph in constants.GRAPH_MAPPING[data_type]:
-            os.makedirs(f"images/{file_name}/{field}", exist_ok=True)
-            save_field_plot(df, field, graph, f"images/{file_name}/{field}/{graph}.png")
+        if make_plots:
+            # Create plots for each field.
+            for graph in constants.GRAPH_MAPPING[data_type]:
+                os.makedirs(f"images/{file_name}/{field}", exist_ok=True)
+                save_field_plot(df, field, graph, f"images/{file_name}/{field}/{graph}.png")
 
     return fields
 

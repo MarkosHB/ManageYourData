@@ -166,15 +166,13 @@ with st.expander(label="Funcionalidades básicas", expanded=True):
                 st.toast("Fichero de datos convertido correctamente", icon="✅")
 
     if file: 
-        st.success("Consejo: Genere el reporte para mejorar el rendimiento y resultados del asistente.", icon="📗")
-
         # Display PDF download button and report.
         if os.path.exists(report_path):       
             if st.button("Pulse aquí para mostrar en el navegador el reporte generado", use_container_width=True, icon="👀"):
                 visualize_pdf()
 
         else:
-            st.info("Información: Obtenga primero el reporte PDF para visualizarlo desde el nabegador aquí.", icon="🔵")
+            st.success("Consejo: Genere el reporte para mejorar el rendimiento y resultados del asistente.", icon="📗")
 
 
 #########################

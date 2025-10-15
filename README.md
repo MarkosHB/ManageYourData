@@ -18,7 +18,7 @@ Este proceso se realizará **desde el mismo ordenador** en el que se encuentre d
 
 ✅ **Interfaz gráfica** para facilitar todos los procesos.
 
-✅ **API REST (FastAPI)** para acceso programático.
+✅ **API REST (FastAPI)** y **MCP Server** integrado para la comunicación estandarizada entre clientes y herramientas.
 
 ✅ **Paquete de Python** como método alternativo mediante terminal.
 

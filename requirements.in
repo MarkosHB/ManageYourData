@@ -5,6 +5,7 @@ openpyxl
 streamlit
 streamlit[pdf]
 fastapi[standard]
+fastapi-mcp
 langchain-ollama
 langchain-experimental
 langchain-google-genai

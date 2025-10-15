@@ -1,18 +1,22 @@
 import os
 from fastapi import FastAPI, HTTPException
+from fastapi_mcp import FastApiMCP
 from manageyourdata.data_manager import DataManager
 from manageyourdata.utils import constants
 
-app = FastAPI()
 dm = DataManager()
+# Create MCP server from FastApi app.
+app = FastAPI(title="ManageYourData")
+mcp = FastApiMCP(app, name="ManageYourData")
+mcp.mount()
 
 
 @app.get("/")
 def read_root():
-    return {"message": "Bienvenido a la API de ManageYourData."}
+    return {"message": "¡Bienvenido a ManageYourData!"}
 
 
-@app.get("/files")
+@app.get("/files/")
 def list_files():
     """Lista los archivos disponibles en el directorio /data."""
     try:
@@ -57,9 +61,8 @@ def export_data(format: str):
         if format not in constants.FORMAT:
             raise HTTPException(status_code=400, detail="Formato no soportado.")
         file_extension = constants.FORMAT[format]
-        export_path = f"./exports/{dm.file_name}-exported{file_extension}"
-        dm.export_data(format)
-        return {"message": f"Datos exportados correctamente en {export_path}."}
+        dm.export_data(file_extension)
+        return {"message": f"Datos exportados correctamente."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

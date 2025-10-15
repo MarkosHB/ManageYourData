@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "manageyourdata"
-version = "0.1"
+version = "0.1.0"
 description = "Generate PDF reports and AI powered analysis from data files locally."
 authors = [
     { name = "Marcos Hidalgo", email = "marcoshidalgobanos@gmail.com" }
@@ -17,6 +17,7 @@ dependencies = [
     "streamlit",
     "streamlit[pdf]",
     "fastapi[standard]",
+    "fastapi-mcp",
     "langchain-ollama",
     "langchain-experimental",
     "langchain-google-genai",

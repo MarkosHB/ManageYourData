@@ -1,5 +1,5 @@
-# Usar una imagen base de Python
-FROM python:3.11
+# Usar una imagen de Python
+FROM python:3.11-slim
 
 # Establecer el directorio de trabajo en el contenedor
 WORKDIR /app
@@ -13,8 +13,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Instalar manageyourdata
 RUN pip install .
 
-# Exponer el puerto que usará Streamlit
-EXPOSE 8501
+# Exponer los puertos usados
+EXPOSE 8000 8501
 
-# Comando para ejecutar la aplicación Streamlit
-CMD ["streamlit", "run", "frontend.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# Ejecutar FastAPI y Streamlit en paralelo
+CMD bash -c "\
+  uvicorn api:app --host 0.0.0.0 --port 8000 & \
+  streamlit run frontend.py --server.port=8501 --server.address=0.0.0.0"
